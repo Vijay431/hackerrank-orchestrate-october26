@@ -1,2 +1,13 @@
 .env*
 !.env.example
+
+# graphify internals (graph.json/html/report are tracked)
+graphify-out/cache/
+graphify-out/.graphify_*
+graphify-out/manifest.json
+graphify-out/cost.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
