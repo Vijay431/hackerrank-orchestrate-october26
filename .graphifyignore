@@ -1,0 +1,10 @@
+.claude/
+openspec/
+.env*
+!.env.example
+log.txt
+.*ignore
+graphify-out/
+output.csv
+__pycache__/
+.venv/
