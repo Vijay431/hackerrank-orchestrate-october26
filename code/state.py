@@ -218,8 +218,15 @@ class ActivityLinker:
                 any(self.system.get(rid) == system and user_of_case[cid] in owners.get(rid, ())
                     for rid in self.system)
 
+        after_cache: Dict[str, bool] = {}
+
         def after_report(cid):
             """The case already has worker results from after its report: it is not a policy-action case."""
+            if cid not in after_cache:
+                after_cache[cid] = _after_report(cid)
+            return after_cache[cid]
+
+        def _after_report(cid):
             r = cases[cid]
             return any(a.event_time > r.reported_at and "Policy action" not in a.details
                        and a.target_system != "account_service" and user_of_case[cid] in owners.get(a.resource_id, ())

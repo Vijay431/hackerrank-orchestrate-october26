@@ -19,6 +19,10 @@ run: ## Submission run (intent gate on, needs OPENROUTER_API_KEY) then validate
 	$(PY) code/main.py
 	$(PY) code/validate_output.py
 
+dev: ## Offline run (no API key): audit all requests as deletion requests, then score offline
+	$(PY) code/main.py --assume-deletion
+	$(PY) code/evaluation/main.py --offline
+
 eval: ## Score the golden samples and custom cases only (needs OPENROUTER_API_KEY), write evaluation report
 	$(PY) code/evaluation/main.py
 

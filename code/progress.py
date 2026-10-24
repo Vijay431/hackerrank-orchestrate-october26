@@ -21,13 +21,12 @@ class Progress:
 
     def _show(self, final: bool = False):
         pct = 100 * self.done // self.total
-        line = f"{self.label}: {self.done}/{self.total} {pct}% ({time.monotonic() - self.start:.0f}s)"
+        elapsed = f"{time.monotonic() - self.start:.0f}s"
         if self.tty:
             filled = 20 * self.done // self.total
             sys.stderr.write(f"\r{self.label} [{'#' * filled}{'.' * (20 - filled)}] "
-                             f"{self.done}/{self.total} {pct}% ({time.monotonic() - self.start:.0f}s)"
-                             + ("\n" if final else ""))
+                             f"{self.done}/{self.total} {pct}% ({elapsed})" + ("\n" if final else ""))
             sys.stderr.flush()
         elif pct // 10 != self.last_step:
             self.last_step = pct // 10
-            print(line, file=sys.stderr, flush=True)
+            print(f"{self.label}: {self.done}/{self.total} {pct}% ({elapsed})", file=sys.stderr, flush=True)
