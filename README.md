@@ -155,3 +155,14 @@ Before submitting, confirm that:
 - `code.zip` includes your runnable code, `README.md`, `code/evaluation/evaluation_report.md`, and `code/evaluation/usage_report.md`;
 - `log.txt` follows the `AGENTS.md` turn format and is uploaded to the `chat_transcript` slot; and
 - no API keys, credentials, real personal data, or sensitive configuration values are included.
+
+## Solution Notes
+
+### Identity rules
+
+`code/identity.py` resolves the request email to a stable `user_id` and builds the subject's identity set:
+
+- The request email may be a current email (`user_identities.csv`) or any historical email (`old_value` or `new_value` in `user_audit_log.csv`); both resolve to the same `user_id`.
+- The identity set contains the `user_id` plus every current and historical email, phone, and email hash.
+- Emails and hashes compare case-insensitively; phones compare on digits only.
+- Names are never sufficient on their own to link a record to a subject.

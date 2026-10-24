@@ -20,9 +20,9 @@ From group 3 onward, every task's verification also includes: run `python code/e
 
 ## 3. Dataset loading and identity
 
-- [ ] 3.1 Load all dataset CSVs into typed records; verify row counts (518 requests, 32 samples, 15 rules) in a unit test
-- [ ] 3.2 Implement identity resolution (current + historical email, phone, hash; case-insensitive email, digit-only phone); verify all 518 request emails resolve (418 current, 100 historical) in a test
-- [ ] 3.3 Document identity rules in `README.md`; verify the section exists
+- [x] 3.1 Load all dataset CSVs into typed records; verify row counts (518 requests, 32 samples, 15 rules) in a unit test
+- [x] 3.2 Implement identity resolution (current + historical email, phone, hash; case-insensitive email, digit-only phone); verify all 518 request emails resolve (418 current, 100 historical) in a test
+- [x] 3.3 Document identity rules in `README.md`; verify the section exists
 
 ## 4. LLM client and cache
 
