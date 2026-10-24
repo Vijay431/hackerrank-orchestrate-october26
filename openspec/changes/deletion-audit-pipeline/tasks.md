@@ -26,9 +26,9 @@ From group 3 onward, every task's verification also includes: run `python code/e
 
 ## 4. LLM client and cache
 
-- [ ] 4.1 Implement the OpenRouter client for `deepseek/deepseek-v4.1-flash` at temperature 0 with SHA-256 keyed cache under `.cache/llm/` and a usage ledger; verify a test with a stubbed client shows a second call is a cache hit with zero model calls
-- [ ] 4.2 Add bounded retry with backoff that never caches failures; verify with a stub that fails once then succeeds
-- [ ] 4.3 Ensure the API key is read only from the environment and never written to cache, ledger, or logs; verify by grepping `.cache/` after a run
+- [x] 4.1 Implement the OpenRouter client for `deepseek/deepseek-v4.1-flash` at temperature 0 with SHA-256 keyed cache under `.cache/llm/` and a usage ledger; verify a test with a stubbed client shows a second call is a cache hit with zero model calls
+- [x] 4.2 Add bounded retry with backoff that never caches failures; verify with a stub that fails once then succeeds
+- [x] 4.3 Ensure the API key is read only from the environment and never written to cache, ledger, or logs; verify by grepping `.cache/` after a run
 
 ## 5. Evidence ingestion
 
