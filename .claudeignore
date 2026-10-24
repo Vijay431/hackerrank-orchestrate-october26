@@ -2,7 +2,6 @@
 !.env.example
 .venv/
 .cache/
-.pytest_cache/
 __pycache__/
 graphify-out/cache/
 code.zip

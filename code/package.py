@@ -10,8 +10,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from paths import ROOT  # noqa: E402
 
-INCLUDE = ["code", "README.md", "Makefile", ".env.example", "evaluation", "tests"]
-SKIP_PARTS = {"__pycache__", ".pytest_cache", ".venv", "venv", ".cache", "dataset", "node_modules"}
+INCLUDE = ["code", "README.md", "Makefile", ".env.example", "evaluation"]
+SKIP_PARTS = {"__pycache__", ".venv", "venv", ".cache", "dataset", "node_modules"}
 
 
 def files():
@@ -34,7 +34,7 @@ def main():
             z.write(f, f.relative_to(ROOT).as_posix())
     with zipfile.ZipFile(out) as z:
         names = z.namelist()
-    bad = [n for n in names if n.startswith(("dataset/", ".cache/")) or n.endswith((".env", ".zip", ".pyc"))
+    bad = [n for n in names if n.startswith(("dataset/", ".cache/", "graphify-out/", "openspec/")) or n.endswith((".env", ".zip", ".pyc"))
            or "/.venv/" in n or n.startswith(".venv/")]
     print("\n".join(names))
     print(f"{len(names)} files; excluded-content violations: {bad or 'none'}")

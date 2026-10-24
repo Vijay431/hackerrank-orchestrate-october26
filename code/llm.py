@@ -10,7 +10,7 @@ import os
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Optional
 
 from paths import CACHE, ROOT
 
@@ -71,16 +71,12 @@ def _openrouter_transport(prompt: str, text: str, image_path: Optional[Path]):
     return content, int(getattr(usage, "prompt_tokens", 0) or 0), int(getattr(usage, "completion_tokens", 0) or 0)
 
 
-Transport = Callable[[str, str, Optional[Path]], tuple]
-
-
 class LLMClient:
-    def __init__(self, transport: Transport = _openrouter_transport, cache_dir: Path = CACHE_DIR,
-                 ledger: Path = LEDGER, sleep: Callable[[float], None] = time.sleep):
-        self.transport = transport
-        self.cache_dir = cache_dir
-        self.ledger = ledger
-        self.sleep = sleep
+    def __init__(self):
+        self.transport = _openrouter_transport
+        self.cache_dir = CACHE_DIR
+        self.ledger = LEDGER
+        self.sleep = time.sleep
 
     def _record(self, kind: str, purpose: str, cache_hit: bool, tin: int, tout: int):
         entry = {"provider": PROVIDER, "model": MODEL, "purpose": purpose,

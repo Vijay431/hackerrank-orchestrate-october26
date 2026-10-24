@@ -4,7 +4,7 @@ PY ?= .venv/bin/python
 # .env is read by code/llm.py (plain KEY=value parser); never include it here, make would evaluate it as Makefile syntax.
 
 .DEFAULT_GOAL := help
-.PHONY: help install run dev eval validate test usage package graph
+.PHONY: help install run eval validate usage package
 
 help: ## List targets
 	@grep -E '^[a-z]+:.*## ' Makefile | awk -F':.*## ' '{printf "%-10s %s\n", $$1, $$2}'
@@ -23,14 +23,8 @@ eval: ## Score the golden samples and custom cases only (needs OPENROUTER_API_KE
 validate: ## Check the output.csv contract
 	$(PY) code/validate_output.py
 
-test: ## Run unit tests
-	$(PY) -m pytest tests -v
-
 usage: ## Write evaluation/usage_report.md from the usage ledger
 	$(PY) code/usage_report.py
 
 package: ## Build code.zip and list contents
 	$(PY) code/package.py
-
-graph: ## Re-extract code into graphify-out/ (no LLM calls)
-	graphify update .

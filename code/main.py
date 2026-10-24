@@ -70,29 +70,16 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="Ghost Data Still Exists deletion-audit agent")
     p.add_argument("--requests", default=str(DATASET / "deletion_requests.csv"))
     p.add_argument("--output", default=str(OUTPUT))
-    p.add_argument("--stub", action="store_true", help="write a NOT_APPLICABLE stub output")
-    p.add_argument("--assume-deletion", action="store_true",
-                   help="development only: skip the LLM intent gate and treat every request as a deletion request")
     args = p.parse_args(argv)
 
     import loader
     requests = sorted(loader.load_requests(Path(args.requests)), key=lambda r: r.case_id)
-    if args.stub:
-        write_rows({r.case_id: ("NOT_APPLICABLE", "[]") for r in requests}, Path(args.output))
-        print(f"wrote {len(requests)} stub rows to {args.output}")
-        return 0
-
-    client = None
-    if args.assume_deletion:
-        intent = {r.case_id: True for r in requests}
-    else:
-        from llm import LLMClient
-        from intent import classify_all
-        client = LLMClient()
-        activity = loader.load_activity()
-        # every known request, so events cannot be attributed to a case that asked for something else
-        everyone = {r.case_id: r for r in list(loader.load_requests()) + list(loader.load_samples()) + requests}
-        intent = classify_all(client, sorted(everyone.values(), key=lambda r: r.case_id), lambda r: [])
+    from llm import LLMClient
+    from intent import classify_all
+    client = LLMClient()
+    # every known request, so events cannot be attributed to a case that asked for something else
+    everyone = {r.case_id: r for r in list(loader.load_requests()) + list(loader.load_samples()) + requests}
+    intent = classify_all(client, sorted(everyone.values(), key=lambda r: r.case_id))
     rows = audit(requests, intent, client)
     write_rows(rows, Path(args.output))
     print(f"wrote {len(rows)} rows to {args.output}")

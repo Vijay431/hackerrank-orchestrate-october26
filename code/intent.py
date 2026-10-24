@@ -2,22 +2,15 @@
 import json
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Dict, Iterable, List
+from typing import Dict, List
 
 from llm import LLMClient
-from loader import Activity, Request
+from loader import Request
 import prompt_registry
 from progress import Progress
 
 WORKERS = 6
 PROMPT = prompt_registry.load("intent")
-
-
-def prior_classifications(req: Request, activity: Iterable[Activity], resource_ids: Iterable[str]) -> List[str]:
-    """CLASSIFY_REQUEST events at or before audit_at for the given resources."""
-    ids = set(resource_ids)
-    return [a.details for a in activity
-            if a.event_type == "CLASSIFY_REQUEST" and a.resource_id in ids and a.event_time <= req.audit_at]
 
 
 def parse_decision(raw: str) -> bool:
@@ -29,19 +22,17 @@ def parse_decision(raw: str) -> bool:
     return val
 
 
-def classify(client: LLMClient, req: Request, context: List[str]) -> bool:
+def classify(client: LLMClient, req: Request) -> bool:
     # untrusted customer text: fence it so the prompt can tell data from instructions
     body = req.request_text.replace("<request_text>", "").replace("</request_text>", "")
     text = f"<request_text>\n{body}\n</request_text>"
-    if context:
-        text += "\nprior_intake_classifications:\n" + "\n".join(f"- {c}" for c in sorted(context))
     return parse_decision(client.complete(PROMPT, text, purpose="intent"))
 
 
-def classify_all(client: LLMClient, requests: List[Request], context_for) -> Dict[str, bool]:
+def classify_all(client: LLMClient, requests: List[Request]) -> Dict[str, bool]:
     """Run classification in a 6-worker pool; results are keyed by case_id so order never matters."""
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        futures = {r.case_id: pool.submit(classify, client, r, context_for(r)) for r in requests}
+        futures = {r.case_id: pool.submit(classify, client, r) for r in requests}
         bar = Progress("intent", len(futures))
         for _ in as_completed(futures.values()):
             bar.update()

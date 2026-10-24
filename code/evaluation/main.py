@@ -1,9 +1,8 @@
 """Evaluation harness: scores output.csv against samples and custom cases.
 
-Usage: python code/evaluation/main.py [--label TEXT] [--no-report]
+Usage: python code/evaluation/main.py
 Always exits 0; scores are reported, never gated.
 """
-import argparse
 import csv
 import json
 import subprocess
@@ -110,14 +109,9 @@ def headline(m):
     return sum(WEIGHTS[k] * m[k] for k in WEIGHTS)
 
 
-OFFLINE = False  # --offline: skip the LLM intent gate (every request is audited as a deletion request)
-
-
 def run_pipeline(requests_path, out_path, stage=""):
     print(f"[eval] {stage or requests_path.name}", file=sys.stderr, flush=True)
     cmd = [sys.executable, str(CODE / "main.py"), "--requests", str(requests_path), "--output", str(out_path)]
-    if OFFLINE:
-        cmd.append("--assume-deletion")
     subprocess.run(
         cmd,
         check=True, cwd=ROOT, stdout=subprocess.DEVNULL,
@@ -181,16 +175,7 @@ def custom_results():
     return {"metrics": score_outputs(expected, got), "n": len(expected), "cases": cases}
 
 
-def main(argv=None):
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--label", default="run")
-    ap.add_argument("--no-report", action="store_true")
-    ap.add_argument("--offline", action="store_true",
-                    help="skip the LLM intent gate and audit every request as a deletion request")
-    args = ap.parse_args(argv)
-    global OFFLINE
-    OFFLINE = args.offline
-
+def main():
     with tempfile.TemporaryDirectory() as td:
         td = Path(td)
         samples = DATASET / "sample_deletion_requests.csv"
@@ -207,15 +192,14 @@ def main(argv=None):
     if custom:
         print("custom:", " ".join(f"{k}={v:.2f}" for k, v in custom["metrics"].items()))
 
-    if not args.no_report:
-        old = REPORT.read_text(encoding="utf-8") if REPORT.exists() else ""
-        history = history_rows(old)
-        history.append(f"| {args.label} | " + " | ".join(f"{metrics[k]:.2f}" for k in WEIGHTS) + f" | {head:.2f} |")
-        failures = FAIL_HEADING + "\n\n_To be written from the score history._\n"
-        if FAIL_HEADING in old:
-            failures = old[old.index(FAIL_HEADING):]
-        EVAL_DIR.mkdir(exist_ok=True)
-        REPORT.write_text(render_report(metrics, head, custom, bad, diff, history, failures), encoding="utf-8")
+    old = REPORT.read_text(encoding="utf-8") if REPORT.exists() else ""
+    history = history_rows(old)
+    history.append("| run | " + " | ".join(f"{metrics[k]:.2f}" for k in WEIGHTS) + f" | {head:.2f} |")
+    failures = FAIL_HEADING + "\n\n_To be written from the score history._\n"
+    if FAIL_HEADING in old:
+        failures = old[old.index(FAIL_HEADING):]
+    EVAL_DIR.mkdir(exist_ok=True)
+    REPORT.write_text(render_report(metrics, head, custom, bad, diff, history, failures), encoding="utf-8")
     return 0
 
 

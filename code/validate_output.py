@@ -1,6 +1,6 @@
 """Validate output.csv against the output contract.
 
-Usage: python code/validate_output.py [output.csv] [requests.csv]
+Usage: python code/validate_output.py
 """
 import csv
 import json
@@ -70,10 +70,8 @@ def validate(output_path: Path, requests_path: Path):
     return errors, len(rows)
 
 
-def main(argv):
-    out = Path(argv[1]) if len(argv) > 1 else OUTPUT
-    req = Path(argv[2]) if len(argv) > 2 else DATASET / "deletion_requests.csv"
-    errors, n = validate(out, req)
+def main():
+    errors, n = validate(OUTPUT, DATASET / "deletion_requests.csv")
     for e in errors[:50]:
         print("ERROR", e)
     print(f"{n} rows checked, {len(errors)} problems")
@@ -81,4 +79,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())

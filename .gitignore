@@ -18,4 +18,3 @@ __pycache__/
 graphify-out/20*/
 
 # caches
-.pytest_cache/

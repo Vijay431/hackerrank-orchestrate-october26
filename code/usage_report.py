@@ -59,14 +59,13 @@ def render(per, purposes, requests: int) -> str:
     return "\n".join(L)
 
 
-def main(argv=None):
+def main():
     import loader
-    ledger = Path(argv[0]) if argv else LEDGER  # optional: ledger of the final cold run
-    per, purposes = summarize(ledger)
+    per, purposes = summarize(LEDGER)
     EVAL_DIR.mkdir(exist_ok=True)
     (EVAL_DIR / "usage_report.md").write_text(render(per, purposes, len(loader.load_requests())), encoding="utf-8")
     print("wrote", EVAL_DIR / "usage_report.md")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

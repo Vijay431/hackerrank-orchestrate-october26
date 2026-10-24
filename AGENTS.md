@@ -426,4 +426,4 @@ Before responding to any user message, confirm:
 ## 10. Skill Usage
 
 - `caveman`: keep agent replies terse; code, commands, paths, and errors stay exact.
-- `graphify`: for codebase questions, query `graphify-out/` first. After code changes, run `make graph` to refresh the graph with agent harness.
+- `graphify`: for codebase questions, query `graphify-out/` first. After code changes, run `graphify update .` to refresh the graph with agent harness.
