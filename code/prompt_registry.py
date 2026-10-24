@@ -6,7 +6,7 @@ The LLM cache key hashes the prompt text, so a new version never reuses response
 from paths import PROMPTS
 
 ACTIVE = {
-    "intent": "v1",
+    "intent": "v2",
     "image_tile": "v1",
 }
 

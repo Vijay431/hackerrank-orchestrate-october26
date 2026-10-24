@@ -1,9 +1,7 @@
 # Thin aliases over the raw commands in README.md; no logic lives here.
 PY ?= .venv/bin/python
 
-# Load KEY=value pairs from .env (no quotes) so recipes see OPENROUTER_API_KEY.
--include .env
-export
+# .env is read by code/llm.py (plain KEY=value parser); never include it here, make would evaluate it as Makefile syntax.
 
 .DEFAULT_GOAL := help
 .PHONY: help install run dev eval validate test usage package graph

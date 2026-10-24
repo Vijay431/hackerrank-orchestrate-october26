@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 from typing import Callable, Optional
 
-from paths import CACHE
+from paths import CACHE, ROOT
 
 MODEL = "deepseek/deepseek-v4.1-flash"
 PROVIDER = "openrouter"
@@ -34,9 +34,21 @@ def cache_key(model: str, prompt: str, payload: str) -> str:
     return h.hexdigest()
 
 
+def _dotenv_value(name: str) -> Optional[str]:
+    """Read one value from the repo-root .env as literal text: no expansion, no command substitution."""
+    path = ROOT / ".env"
+    if not path.is_file():
+        return None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        k, sep, v = line.partition("=")
+        if sep and k.strip() == name:
+            return v.strip().strip("\"'") or None
+    return None
+
+
 def _openrouter_transport(prompt: str, text: str, image_path: Optional[Path]):
     """Real call through the OpenRouter SDK. Returns (content, input_tokens, output_tokens)."""
-    key = os.environ.get("OPENROUTER_API_KEY")
+    key = os.environ.get("OPENROUTER_API_KEY") or _dotenv_value("OPENROUTER_API_KEY")
     if not key:
         raise LLMError("OPENROUTER_API_KEY is not set and no cached response exists")
     from openrouter import OpenRouter
