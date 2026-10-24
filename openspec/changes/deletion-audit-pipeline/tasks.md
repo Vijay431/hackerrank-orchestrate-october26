@@ -55,7 +55,7 @@ From group 3 onward, every task's verification also includes: run `python code/e
 
 - [ ] 8.1 Status decision and step generation for COMPLETE and INCOMPLETE cases, with verification for every linked resource; verify `case_06` includes VERIFY_RECORD_ABSENT for `account_006`
 - [ ] 8.2 Fixed ordering (phase, operation rank, `system_id`, `resource_id`) and renumbering; verify `case_11` step order matches `sample_output.csv`
-- [ ] 8.3 Single-file citation rule (latest covering capture at or before `audit_at`); verify cited `evidence_id` matches all 32 samples or mismatches are listed
+- [ ] 8.3 Per-resource citation rule (latest covering capture of the resource's system at or before `audit_at`); verify cited `evidence_id` matches all 32 samples or mismatches are listed
 - [ ] 8.4 Write `output.csv` (sorted, compact sorted-key JSON, NOT_APPLICABLE as `[]`), replacing the stub; verify 518 rows, valid JSON, allowed operation/state pairs via a validator script
 - [ ] 8.5 Document setup and run commands in `README.md`; verify a clean run following the README produces `output.csv`
 

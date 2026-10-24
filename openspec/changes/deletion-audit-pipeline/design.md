@@ -62,7 +62,7 @@ For each linked resource, take the latest fact at or before `audit_at` across al
 Findings, remediations, and verifications are generated from (resource, required state, observed state) triples, then sorted by a fixed operation rank (the problem statement table order), `system_id`, `resource_id`, and renumbered. Remediation order (flows and restores before records) falls out of the operation rank. Serialization uses `json.dumps(sort_keys=True, separators=(",", ":"))`.
 
 ### D8. Citation rule
-Per case, choose one file: the latest `captured_at` at or before `audit_at` whose facts cover the case's linked resources. All FINDING steps and all COMPLETE verification steps cite it. Activity or audit IDs are cited only when no file covers the finding.
+Per resource, cite the latest file captured at or before `audit_at` that covers that resource's system (a file whose records or `snapshot_scope` include the system) and proves the resource's observed state, including absence in a snapshot that covers the system. FINDING and COMPLETE verification steps cite that file; steps for resources in the same system share it. Activity or audit IDs are cited only when no file covers the finding. Rationale: sample `case_04` cites `evidence_54` for its account step and `evidence_56` for its analytics step, so one file per case cannot match.
 
 ### D9. LLM client and cache
 OpenRouter SDK client, temperature 0, fixed prompts stored as files under `code/prompts/`. Cache key = SHA-256 of `model + prompt text + input`. Cache stored as JSON files under `.cache/llm/`. Usage (input/output tokens, cache hit or miss) is appended to a run ledger used by the usage report.
@@ -85,7 +85,7 @@ Headline = 0.25 status + 0.20 step + 0.15 field + 0.20 sequence + 0.10 citation 
 
 - [Category resolver misclassifies a resource, e.g. analytics record needing DELETE vs ANONYMIZE] -> Derive category from content fields, log every unresolved category, and surface counts in the evaluation report.
 - [Image extraction quality varies] -> Strict JSON prompt, cached once, results cross-checked against SQL/JSON facts for the same resource.
-- [Single-file citation rule mismatches hidden answers for some cases] -> Validated against all 32 samples; mismatches recorded under failures in the evaluation report.
+- [Per-resource citation rule mismatches hidden answers for some cases] -> Validated against all 32 samples; mismatches recorded under failures in the evaluation report.
 - [Overfitting to 32 samples] -> Rules expressed generically; custom cases exercise behaviors not present in the samples.
 - [OpenRouter rate limits or transient errors] -> Bounded retries with backoff; failed calls are never cached.
 - [Early harness runs score a stub output, so headline scores start near zero] -> Scores are tracked per task in the report; only the trend matters until the pipeline is complete.
