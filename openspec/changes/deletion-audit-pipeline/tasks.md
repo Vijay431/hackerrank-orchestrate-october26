@@ -4,19 +4,19 @@ From group 3 onward, every task's verification also includes: run `python code/e
 
 ## 1. Setup
 
-- [ ] 1.1 Create `code/requirements.txt` with `pypdf` and the OpenRouter SDK; verify `pip install -r code/requirements.txt` succeeds in a fresh venv
-- [ ] 1.2 Add `.cache/` to `.gitignore` and confirm `OPENROUTER_API_KEY` is listed in `.env.example`; verify with `git check-ignore .cache/x`
-- [ ] 1.3 Create the module layout under `code/` (loader, ingest, identity, state, policy, planner, llm, main) with repo-root-relative paths; verify `python code/main.py --help` runs
+- [x] 1.1 Create `code/requirements.txt` with `pypdf` and the OpenRouter SDK; verify `pip install -r code/requirements.txt` succeeds in a fresh venv
+- [x] 1.2 Add `.cache/` to `.gitignore` and confirm `OPENROUTER_API_KEY` is listed in `.env.example`; verify with `git check-ignore .cache/x`
+- [x] 1.3 Create the module layout under `code/` (loader, ingest, identity, state, policy, planner, llm, main) with repo-root-relative paths; verify `python code/main.py --help` runs
 
 ## 2. Evaluation harness (first)
 
-- [ ] 2.1 Make `code/main.py` write a stub `output.csv` (518 rows, `NOT_APPLICABLE`, `[]`) so the harness has input; verify 518 sorted rows
-- [ ] 2.2 Implement `code/evaluation/main.py` scoring status, step, field, and sequence accuracy against `dataset/sample_output.csv` per D11; verify it prints all four metrics for the stub
-- [ ] 2.3 Implement citation validity over the full output (known id, timestamp at or before `audit_at`), listing offending cases; verify a fixture with a future-dated citation scores below 100
-- [ ] 2.4 Implement the determinism check (two pipeline runs, byte comparison, differing rows listed); verify the stub scores 100
-- [ ] 2.5 Compute the headline score (0.25 status, 0.20 step, 0.15 field, 0.20 sequence, 0.10 citation, 0.10 determinism) and always exit 0; verify the formula with a unit test
+- [x] 2.1 Make `code/main.py` write a stub `output.csv` (518 rows, `NOT_APPLICABLE`, `[]`) so the harness has input; verify 518 sorted rows
+- [x] 2.2 Implement `code/evaluation/main.py` scoring status, step, field, and sequence accuracy against `dataset/sample_output.csv` per D11; verify it prints all four metrics for the stub
+- [x] 2.3 Implement citation validity over the full output (known id, timestamp at or before `audit_at`), listing offending cases; verify a fixture with a future-dated citation scores below 100
+- [x] 2.4 Implement the determinism check (two pipeline runs, byte comparison, differing rows listed); verify the stub scores 100
+- [x] 2.5 Compute the headline score (0.25 status, 0.20 step, 0.15 field, 0.20 sequence, 0.10 citation, 0.10 determinism) and always exit 0; verify the formula with a unit test
 - [ ] 2.6 Add at least three custom cases under `code/evaluation/cases/` (non-deletion request, historical-email subject, tombstone or replica-drift case) with expected outputs; verify they run and are reported separately
-- [ ] 2.7 Write metrics, headline, custom-case results, and a score history table to `evaluation/evaluation_report.md`; verify all required sections are present
+- [x] 2.7 Write metrics, headline, custom-case results, and a score history table to `evaluation/evaluation_report.md`; verify all required sections are present
 
 ## 3. Dataset loading and identity
 
