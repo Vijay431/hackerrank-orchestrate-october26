@@ -110,16 +110,27 @@ def headline(m):
     return sum(WEIGHTS[k] * m[k] for k in WEIGHTS)
 
 
+OFFLINE = False  # --offline: skip the LLM intent gate (every request is audited as a deletion request)
+
+
 def run_pipeline(requests_path, out_path):
+    cmd = [sys.executable, str(CODE / "main.py"), "--requests", str(requests_path), "--output", str(out_path)]
+    if OFFLINE:
+        cmd.append("--assume-deletion")
     subprocess.run(
-        [sys.executable, str(CODE / "main.py"), "--requests", str(requests_path), "--output", str(out_path)],
+        cmd,
         check=True, cwd=ROOT, stdout=subprocess.DEVNULL,
     )
     return read_rows(out_path)
 
 
 def history_rows(text):
-    return [l for l in text.splitlines() if l.startswith("| ") and not l.startswith(("| Label", "| ---"))]
+    """Rows of the score history table in an existing report."""
+    if "## Score history" not in text:
+        return []
+    section = text[text.index("## Score history"):]
+    section = section.split("\n## ", 2)[0] if section.count("\n## ") else section
+    return [l for l in section.splitlines() if l.startswith("| ") and not l.startswith(("| Label", "| ---"))]
 
 
 def render_report(metrics, head, custom, bad_cites, det_diff, history, failures_text):
@@ -173,7 +184,11 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--label", default="run")
     ap.add_argument("--no-report", action="store_true")
+    ap.add_argument("--offline", action="store_true",
+                    help="skip the LLM intent gate and audit every request as a deletion request")
     args = ap.parse_args(argv)
+    global OFFLINE
+    OFFLINE = args.offline
 
     with tempfile.TemporaryDirectory() as td:
         td = Path(td)

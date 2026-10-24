@@ -31,11 +31,16 @@ def audit(requests, intent, client):
     policy = Policy(loader.load_rules())
     universe = {r.case_id: r for r in list(loader.load_requests()) + list(loader.load_samples())}
     universe.update({r.case_id: r for r in requests})
-    users = {}
-    for r in universe.values():
+    users, alias, seen = {}, {}, {}
+    for r in sorted(universe.values(), key=lambda r: r.case_id):
         s = idx.resolve_email(r.email)
-        if s:
+        if not s:
+            continue
+        rep = seen.setdefault((s.user_id, r.reported_at, r.audit_at), r.case_id)
+        if rep == r.case_id:
             users[r.case_id] = s.user_id
+        else:  # repeat request from the same person at the same time: shares the first request's links
+            alias[r.case_id] = rep
     linker = ActivityLinker([r for r in universe.values() if r.case_id in users], users,
                             owners_map(findex, idx), activity)
     rows = {}
@@ -48,10 +53,12 @@ def audit(requests, intent, client):
             rows[r.case_id] = ("NOT_APPLICABLE", "[]")
             continue
         vals = subject.values()
-        links = link_resources(r, vals, findex, activity, linker)
+        links = link_resources(r, vals, findex, activity, linker, alias.get(r.case_id, r.case_id))
         items = [it for it in (assess(l, r.audit_at, vals, findex, policy) for l in links.values()) if it]
         status, steps = build_steps(items)
         rows[r.case_id] = (status, serialize(steps))
+    if policy.unresolved:
+        print(f"warning: {policy.unresolved} resource categories could not be resolved", file=sys.stderr)
     return rows
 
 

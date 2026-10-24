@@ -24,6 +24,7 @@ RESOURCE_RE = re.compile(r"\b(" + "|".join(sorted(RESOURCE_PREFIX_SYSTEM, key=le
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 USER_RE = re.compile(r"\buser_\d+\b")
 HASH_RE = re.compile(r"\b[0-9a-f]{64}\b")
+REGISTER_RE = re.compile(r"(ORD-\d+)\s*\|\s*(user_\d+)\s*\|[^\n]*?Retain until\s+(\d{1,2} \w{3} \d{4})")
 STATEMENT_RE = re.compile(r"\bNST-\d{4}-\d{4}-\d{4}\b")
 ISO_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
 PHONE_KEYS = ("phone",)
@@ -371,6 +372,11 @@ def ingest_pdf(info: SourceInfo, text: str):
             attrs["file"] = True
         info.facts.append(Fact(info.file_id, info.captured_at, info.captured_at, system_for_resource(rid), rid,
                                None, "FOUND", "primary", refs, attrs))
+    for m in REGISTER_RE.finditer(text):  # finance register rows only confirm that a hold is active
+        order, user, until = m.group(1), m.group(2).lower(), m.group(3)
+        info.facts.append(Fact(info.file_id, info.captured_at, info.captured_at, "finance_register", None,
+                               "LEGAL_HOLD_REGISTER", "FOUND", "primary", frozenset({user}),
+                               {"register": True, "order": order, "retain_until": until}))
     for m in STATEMENT_RE.finditer(text):
         info.facts.append(Fact(info.file_id, info.captured_at, info.captured_at, "account_history_service",
                                m.group(0), "USER_PROFILE", "FOUND", "primary", refs, {"document": "statement"}))

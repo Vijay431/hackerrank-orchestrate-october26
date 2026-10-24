@@ -166,3 +166,37 @@ Before submitting, confirm that:
 - The identity set contains the `user_id` plus every current and historical email, phone, and email hash.
 - Emails and hashes compare case-insensitively; phones compare on digits only.
 - Names are never sufficient on their own to link a record to a subject.
+
+### Setup and run
+
+Requires Python 3.10+.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r code/requirements.txt
+cp .env.example .env                                    # then set OPENROUTER_API_KEY (never commit it)
+export OPENROUTER_API_KEY=...                           # the key is read from the environment only
+python code/main.py                                     # writes ./output.csv (518 rows)
+python code/validate_output.py                          # checks the output contract
+python code/evaluation/main.py                          # scores the 32 samples and custom cases, writes evaluation/evaluation_report.md
+python code/usage_report.py                             # writes evaluation/usage_report.md from the last run's ledger
+python -m pytest tests                                  # unit tests
+```
+
+Model: `deepseek/deepseek-v4.1-flash` through the OpenRouter SDK at temperature 0. Every response is cached under `.cache/` (git-ignored), keyed by model, prompt and input, so a rerun with a warm cache makes no model calls and writes a byte-identical `output.csv`.
+
+Offline development (no API key): `python code/main.py --assume-deletion` and `python code/evaluation/main.py --offline` skip the intent gate and audit every request as a deletion request. Use them for development only; the submitted `output.csv` must come from a run that includes the intent gate. Images are read by the model once and cached; without a key and a warm cache they are skipped.
+
+### Architecture
+
+| Module | Role |
+| --- | --- |
+| `loader.py`, `identity.py` | Typed dataset loaders; current and historical identifiers per subject |
+| `ingest.py` | SQL, JSON, log, text, PDF and image evidence normalized to `Fact` records |
+| `state.py` | Fact index, linking of resources to a subject, `ActivityLinker`, state at `audit_at` per store |
+| `policy.py` | Data category resolution and treatment from `deletion_rules.csv` |
+| `planner.py` | Status decision, finding/remediation/verification steps, fixed ordering, serialization |
+| `intent.py`, `llm.py` | Cached one-call-per-case intent gate (6 workers) and the OpenRouter client |
+| `evaluation/main.py` | Sample accuracy, citation validity, determinism, custom cases |
+
+Everything except intent classification and image reading is plain, deterministic code.

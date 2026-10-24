@@ -54,7 +54,8 @@ class Linked:
 
 
 def link_resources(req: Request, identity_values: frozenset, index: FactIndex,
-                   activity: Iterable[Activity], linker: "ActivityLinker" = None) -> Dict[str, Linked]:
+                   activity: Iterable[Activity], linker: "ActivityLinker" = None,
+                   linker_case: str = None) -> Dict[str, Linked]:
     cutoff = req.audit_at
     out: Dict[str, Linked] = {}
 
@@ -89,7 +90,7 @@ def link_resources(req: Request, identity_values: frozenset, index: FactIndex,
                 if index.by_resource.get(a.resource_id):  # a catalog link alone proves nothing about state
                     add(a.resource_id, "catalog", a.target_system, a.activity_id)
     if linker is not None:
-        for rid, act_id in linker.resources_for(req.case_id).items():
+        for rid, act_id in linker.resources_for(linker_case or req.case_id).items():
             add(rid, "activity", linker.system.get(rid), act_id)
     return out
 

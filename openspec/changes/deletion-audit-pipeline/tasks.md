@@ -15,7 +15,7 @@ From group 3 onward, every task's verification also includes: run `python code/e
 - [x] 2.3 Implement citation validity over the full output (known id, timestamp at or before `audit_at`), listing offending cases; verify a fixture with a future-dated citation scores below 100
 - [x] 2.4 Implement the determinism check (two pipeline runs, byte comparison, differing rows listed); verify the stub scores 100
 - [x] 2.5 Compute the headline score (0.25 status, 0.20 step, 0.15 field, 0.20 sequence, 0.10 citation, 0.10 determinism) and always exit 0; verify the formula with a unit test
-- [ ] 2.6 Add at least three custom cases under `code/evaluation/cases/` (non-deletion request, historical-email subject, tombstone or replica-drift case) with expected outputs; verify they run and are reported separately
+- [x] 2.6 Add at least three custom cases under `code/evaluation/cases/` (non-deletion request, historical-email subject, tombstone or replica-drift case) with expected outputs; verify they run and are reported separately
 - [x] 2.7 Write metrics, headline, custom-case results, and a score history table to `evaluation/evaluation_report.md`; verify all required sections are present
 
 ## 3. Dataset loading and identity
@@ -41,27 +41,27 @@ From group 3 onward, every task's verification also includes: run `python code/e
 ## 6. Intent gate
 
 - [ ] 6.1 Intent prompt in `code/prompts/` returning strict JSON `{"authorizes_deletion": bool}`, with prior `CLASSIFY_REQUEST` events as context; verify all 32 sample requests classify as deletion (matching `sample_output.csv`) and three custom non-deletion texts (access, export, opt-out) classify as non-deletion
-- [ ] 6.2 Run intent calls in a 6-worker pool keyed by `case_id`; verify parallel and sequential runs give identical decisions
+- [x] 6.2 Run intent calls in a 6-worker pool keyed by `case_id`; verify parallel and sequential runs give identical decisions
 
 ## 7. Linking, state, and policy
 
-- [ ] 7.1 Resource linking via `LINK_RESOURCE_IDENTITY` events and fact contents, cut off at `audit_at`; verify sample case `case_11` links `search_052`, `analytics_2034`, `support_864`, `data_flow_9522`
-- [ ] 7.2 State at `audit_at` (inclusive), latest observation wins, replica drift, claims ignored; verify a test where a SUCCESS deletion is contradicted by a later snapshot yields PRESENT
-- [ ] 7.3 Category resolver from content plus the account-history statement override (`USER_PROFILE`, `account_history_service`, `NST-2026-0718-1842`); verify unresolved categories are logged and counted
-- [ ] 7.4 Policy treatment from `deletion_rules.csv` including tombstone, `legal_hold_*`-only holds with register confirmation, `rule_12` retention, and backup restore blocking; verify sample cases `case_31`, `case_32`, `case_09` treatments
-- [ ] 7.5 Recreation-risk detection (active flows, restorable backups); verify sample cases `case_15` and `case_17`
+- [x] 7.1 Resource linking via `LINK_RESOURCE_IDENTITY` events and fact contents, cut off at `audit_at`; verify sample case `case_11` links `search_052`, `analytics_2034`, `support_864`, `data_flow_9522`
+- [x] 7.2 State at `audit_at` (inclusive), latest observation wins, replica drift, claims ignored; verify a test where a SUCCESS deletion is contradicted by a later snapshot yields PRESENT
+- [x] 7.3 Category resolver from content plus the account-history statement override (`USER_PROFILE`, `account_history_service`, `NST-2026-0718-1842`); verify unresolved categories are logged and counted
+- [x] 7.4 Policy treatment from `deletion_rules.csv` including tombstone, `legal_hold_*`-only holds with register confirmation, `rule_12` retention, and backup restore blocking; verify sample cases `case_31`, `case_32`, `case_09` treatments
+- [x] 7.5 Recreation-risk detection (active flows, restorable backups); verify sample cases `case_15` and `case_17`
 
 ## 8. Step planning and output
 
-- [ ] 8.1 Status decision and step generation for COMPLETE and INCOMPLETE cases, with verification for every linked resource; verify `case_06` includes VERIFY_RECORD_ABSENT for `account_006`
-- [ ] 8.2 Fixed ordering (phase, operation rank, `system_id`, `resource_id`) and renumbering; verify `case_11` step order matches `sample_output.csv`
-- [ ] 8.3 Per-resource citation rule (latest covering capture of the resource's system at or before `audit_at`); verify cited `evidence_id` matches all 32 samples or mismatches are listed
+- [x] 8.1 Status decision and step generation for COMPLETE and INCOMPLETE cases, with verification for every linked resource; verify `case_06` includes VERIFY_RECORD_ABSENT for `account_006`
+- [x] 8.2 Fixed ordering (phase, operation rank, `system_id`, `resource_id`) and renumbering; verify `case_11` step order matches `sample_output.csv`
+- [x] 8.3 Per-resource citation rule (latest covering capture of the resource's system at or before `audit_at`); verify cited `evidence_id` matches all 32 samples or mismatches are listed
 - [ ] 8.4 Write `output.csv` (sorted, compact sorted-key JSON, NOT_APPLICABLE as `[]`), replacing the stub; verify 518 rows, valid JSON, allowed operation/state pairs via a validator script
 - [ ] 8.5 Document setup and run commands in `README.md`; verify a clean run following the README produces `output.csv`
 
 ## 9. Final reports
 
-- [ ] 9.1 Add failures found and improvements made to `evaluation/evaluation_report.md` from the score history; verify the section is present
+- [x] 9.1 Add failures found and improvements made to `evaluation/evaluation_report.md` from the score history; verify the section is present
 - [ ] 9.2 Generate `evaluation/usage_report.md` from the usage ledger of the final full run (provider, model, calls, cache hits, tokens, totals, averages, cost estimates); verify it covers all required fields
 
 ## 10. Integration
