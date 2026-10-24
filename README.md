@@ -197,7 +197,7 @@ Makefile shortcuts (aliases for the commands above; set `PY=python` to use anoth
 | `make package` | `code/package.py` |
 | `make graph` | `graphify update .` (re-extract code into `graphify-out/`, no LLM calls) |
 
-The Makefile loads `.env` automatically (plain `KEY=value` lines, no quotes).
+`code/llm.py` reads `OPENROUTER_API_KEY` from `.env` when it is not already in the environment (plain `KEY=value` lines only; no expansion or command substitution). The Makefile never includes `.env`.
 
 `make dev` overwrites `output.csv` and the evaluation report with offline results; rerun `make run` before submitting.
 

@@ -30,7 +30,9 @@ def parse_decision(raw: str) -> bool:
 
 
 def classify(client: LLMClient, req: Request, context: List[str]) -> bool:
-    text = f"request_text: {req.request_text}"
+    # untrusted customer text: fence it so the prompt can tell data from instructions
+    body = req.request_text.replace("<request_text>", "").replace("</request_text>", "")
+    text = f"<request_text>\n{body}\n</request_text>"
     if context:
         text += "\nprior_intake_classifications:\n" + "\n".join(f"- {c}" for c in sorted(context))
     return parse_decision(client.complete(PROMPT, text, purpose="intent"))
