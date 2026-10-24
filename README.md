@@ -155,3 +155,50 @@ Before submitting, confirm that:
 - `code.zip` includes your runnable code, `README.md`, `code/evaluation/evaluation_report.md`, and `code/evaluation/usage_report.md`;
 - `log.txt` follows the `AGENTS.md` turn format and is uploaded to the `chat_transcript` slot; and
 - no API keys, credentials, real personal data, or sensitive configuration values are included.
+
+## Solution Notes
+
+### Identity rules
+
+`code/identity.py` resolves the request email to a stable `user_id` and builds the subject's identity set:
+
+- The request email may be a current email (`user_identities.csv`) or any historical email (`old_value` or `new_value` in `user_audit_log.csv`); both resolve to the same `user_id`.
+- The identity set contains the `user_id` plus every current and historical email, phone, and email hash.
+- Emails and hashes compare case-insensitively; phones compare on digits only.
+- Names are never sufficient on their own to link a record to a subject.
+
+### Setup and run
+
+Requires Python 3.10+.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r code/requirements.txt
+cp .env.example .env                                    # then set OPENROUTER_API_KEY (never commit it)
+export OPENROUTER_API_KEY=...                           # the key is read from the environment only
+python code/main.py                                     # writes ./output.csv (518 rows)
+python code/validate_output.py                          # checks the output contract
+python code/evaluation/main.py                          # scores the 32 samples and custom cases, writes evaluation/evaluation_report.md
+python code/usage_report.py                             # writes evaluation/usage_report.md from the last run's ledger
+python -m pytest tests                                  # unit tests
+```
+
+Model: `deepseek/deepseek-v4.1-flash` through the OpenRouter SDK at temperature 0. Every response is cached under `.cache/` (git-ignored), keyed by model, prompt and input, so a rerun with a warm cache makes no model calls and writes a byte-identical `output.csv`.
+
+Offline development (no API key): `python code/main.py --assume-deletion` and `python code/evaluation/main.py --offline` skip the intent gate and audit every request as a deletion request. Use them for development only; the submitted `output.csv` must come from a run that includes the intent gate. Each screenshot is cut into table-column and detail-panel tiles (`code/vision.py`, Pillow), upscaled, and transcribed by the model once per tile (the model misreads full-size screenshots); transcripts are cached, and without a key and a warm cache images are skipped.
+
+For the usage report, set `OPENROUTER_PRICE_INPUT` and `OPENROUTER_PRICE_OUTPUT` (USD per million tokens) and run `python code/usage_report.py [ledger.jsonl]`.
+
+### Architecture
+
+| Module | Role |
+| --- | --- |
+| `loader.py`, `identity.py` | Typed dataset loaders; current and historical identifiers per subject |
+| `ingest.py` | SQL, JSON, log, text, PDF and image evidence normalized to `Fact` records |
+| `state.py` | Fact index, linking of resources to a subject, `ActivityLinker`, state at `audit_at` per store |
+| `policy.py` | Data category resolution and treatment from `deletion_rules.csv` |
+| `planner.py` | Status decision, finding/remediation/verification steps, fixed ordering, serialization |
+| `intent.py`, `llm.py` | Cached one-call-per-case intent gate (6 workers) and the OpenRouter client |
+| `evaluation/main.py` | Sample accuracy, citation validity, determinism, custom cases |
+
+Everything except intent classification and image reading is plain, deterministic code.

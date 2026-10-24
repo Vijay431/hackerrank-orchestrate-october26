@@ -1,5 +1,7 @@
 .env*
 !.env.example
+.cache/
+code.zip
 
 # graphify internals (graph.json/html/report are tracked)
 graphify-out/cache/

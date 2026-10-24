@@ -180,11 +180,15 @@ A `COMPLETE` case SHALL contain only VERIFICATION steps, one per linked resource
 - **THEN** steps are VERIFY_RECORD_ABSENT, VERIFY_RECORD_PRESENT, VERIFY_RECORD_ANONYMIZED, each with a non-empty `evidence_id`
 
 ### Requirement: Evidence citation rule
-Each case SHALL cite a single evidence file: the latest file captured at or before `audit_at` whose contents cover the subject's linked resources. Citations SHALL never reference files captured after `audit_at` or organizer-only data.
+Each cited step SHALL cite the latest evidence file captured at or before `audit_at` that covers the resource's system and proves its observed state. Citations SHALL never reference files captured after `audit_at` or organizer-only data.
 
 #### Scenario: Latest covering capture
-- **WHEN** two snapshots cover the subject, captured 2026-09-02 and 2026-09-15, and `audit_at` is 2026-09-15T12:00:00Z
-- **THEN** all cited steps use the 2026-09-15 file
+- **WHEN** two snapshots cover a resource's system, captured 2026-09-02 and 2026-09-15, and `audit_at` is 2026-09-15T12:00:00Z
+- **THEN** the step for that resource cites the 2026-09-15 file
+
+#### Scenario: Different systems cite different files
+- **WHEN** a case's account resource is covered by one snapshot and its analytics resource by another
+- **THEN** each step cites the file covering its own system
 
 ### Requirement: Participant-only data
 The system SHALL read only files under `dataset/` for predictions and SHALL NOT use hidden golden answers, hardcoded labels, or case-family shortcuts.

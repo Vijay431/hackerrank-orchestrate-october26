@@ -1,0 +1,4 @@
+case_id,email,requested_at,reported_status,reported_at,audit_at,request_text
+custom_01,amina.elmasri@gmail.com,2026-08-18T09:14:00Z,COMPLETE,2026-08-20T16:42:00Z,2026-09-03T11:30:00Z,Could you send me a copy of all the personal data you hold about me? I do not want anything deleted.
+custom_02,MINJUN.KIM90@gmail.com,2026-08-24T12:00:00Z,COMPLETE,2026-08-25T12:00:00Z,2026-09-15T12:00:00Z,Please erase my account and every copy of my personal data. I used my previous email address for the original sign-up.
+custom_03,addo.kofi@gmail.com,2026-09-03T12:00:00Z,PARTIALLY_COMPLETE,2026-09-06T12:00:00Z,2026-09-15T12:00:00Z,"Por favor, eliminen mi cuenta y todos mis datos personales. Revisen también las copias que puedan quedar en otros sistemas."

@@ -1,0 +1,223 @@
+"""Evaluation harness: scores output.csv against samples and custom cases.
+
+Usage: python code/evaluation/main.py [--label TEXT] [--no-report]
+Always exits 0; scores are reported, never gated.
+"""
+import argparse
+import csv
+import json
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+CODE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(CODE))
+
+from paths import DATASET, EVAL_DIR, ROOT  # noqa: E402
+
+CASES_DIR = Path(__file__).resolve().parent / "cases"
+REPORT = EVAL_DIR / "evaluation_report.md"
+FIELDS = ["step_no", "phase", "system_id", "resource_id", "operation", "state", "evidence_id"]
+WEIGHTS = {"status": 0.25, "step": 0.20, "field": 0.15, "sequence": 0.20, "citation": 0.10, "determinism": 0.10}
+HISTORY_HEADER = "| Label | Status | Step | Field | Sequence | Citation | Determinism | Headline |"
+FAIL_HEADING = "## Failures found and improvements made"
+
+
+def read_rows(path):
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def steps_of(row):
+    return json.loads(row["steps_json"]) if row and row.get("steps_json") else []
+
+
+def pct(num, den):
+    return 100.0 if den == 0 else 100.0 * num / den
+
+
+def score_outputs(expected_rows, got_rows):
+    """Status, step, field and sequence accuracy over the expected cases."""
+    got = {r["case_id"]: r for r in got_rows}
+    status_ok = steps_total = steps_ok = fields_total = fields_ok = seq_ok = 0
+    for exp in expected_rows:
+        g = got.get(exp["case_id"])
+        if g and g["deletion_status"] == exp["deletion_status"]:
+            status_ok += 1
+        es, gs = steps_of(exp), steps_of(g)
+        steps_total += len(es)
+        for i in range(max(len(es), len(gs))):
+            e = es[i] if i < len(es) else None
+            x = gs[i] if i < len(gs) else None
+            fields_total += len(FIELDS)
+            if e and x:
+                m = sum(1 for k in FIELDS if e.get(k) == x.get(k))
+                fields_ok += m
+                if m == len(FIELDS):
+                    steps_ok += 1
+        key = lambda s: [(t["phase"], t["operation"], t["system_id"], t["resource_id"]) for t in s]
+        if key(es) == key(gs):
+            seq_ok += 1
+    n = len(expected_rows)
+    return {
+        "status": pct(status_ok, n),
+        "step": pct(steps_ok, steps_total),
+        "field": pct(fields_ok, fields_total),
+        "sequence": pct(seq_ok, n),
+    }
+
+
+def known_ids(dataset=DATASET):
+    """Map every participant-visible evidence/activity/audit id to its timestamp."""
+    ids = {}
+    for r in read_rows(dataset / "evidence_files.csv"):
+        ids[r["file_id"]] = r["captured_at"]
+    for r in read_rows(dataset / "system_activity.csv"):
+        ids[r["activity_id"]] = r["event_time"]
+    for r in read_rows(dataset / "user_audit_log.csv"):
+        ids[r["audit_id"]] = r["event_time"]
+    return ids
+
+
+def citation_validity(output_rows, audit_at, ids):
+    """Share of non-empty evidence_ids that resolve and are not after audit_at."""
+    total = good = 0
+    bad = []
+    for row in output_rows:
+        cutoff = audit_at.get(row["case_id"])
+        for s in steps_of(row):
+            eid = s.get("evidence_id", "")
+            if not eid:
+                continue
+            total += 1
+            ts = ids.get(eid)
+            if ts is not None and cutoff is not None and ts <= cutoff:
+                good += 1
+            else:
+                bad.append((row["case_id"], eid))
+    return pct(good, total), bad
+
+
+def determinism(rows_a, rows_b):
+    a = {r["case_id"]: (r["deletion_status"], r["steps_json"]) for r in rows_a}
+    b = {r["case_id"]: (r["deletion_status"], r["steps_json"]) for r in rows_b}
+    diff = sorted(c for c in set(a) | set(b) if a.get(c) != b.get(c))
+    return (100.0 if not diff else 0.0), diff
+
+
+def headline(m):
+    return sum(WEIGHTS[k] * m[k] for k in WEIGHTS)
+
+
+OFFLINE = False  # --offline: skip the LLM intent gate (every request is audited as a deletion request)
+
+
+def run_pipeline(requests_path, out_path):
+    cmd = [sys.executable, str(CODE / "main.py"), "--requests", str(requests_path), "--output", str(out_path)]
+    if OFFLINE:
+        cmd.append("--assume-deletion")
+    subprocess.run(
+        cmd,
+        check=True, cwd=ROOT, stdout=subprocess.DEVNULL,
+    )
+    return read_rows(out_path)
+
+
+def history_rows(text):
+    """Rows of the score history table in an existing report."""
+    if "## Score history" not in text:
+        return []
+    section = text[text.index("## Score history"):]
+    section = section.split("\n## ", 2)[0] if section.count("\n## ") else section
+    return [l for l in section.splitlines() if l.startswith("| ") and not l.startswith(("| Label", "| ---"))]
+
+
+def render_report(metrics, head, custom, bad_cites, det_diff, history, failures_text):
+    L = ["# Evaluation Report", "", "Generated by `python code/evaluation/main.py`. Scores are 0-100.", "",
+         "## Metrics (32 public samples, citation over full output)", "",
+         "| Metric | Score |", "| --- | --- |"]
+    labels = {"status": "Case-level deletion-status accuracy", "step": "Step-level accuracy",
+              "field": "Field-level accuracy", "sequence": "Sequence accuracy",
+              "citation": "Citation validity (all 518 cases)", "determinism": "Determinism (two runs byte-identical)"}
+    for k in WEIGHTS:
+        L.append(f"| {labels[k]} | {metrics[k]:.2f} |")
+    L += [f"| **Headline** | **{head:.2f}** |", "",
+          "Headline = 0.25 status + 0.20 step + 0.15 field + 0.20 sequence + 0.10 citation + 0.10 determinism.", ""]
+    L += ["## Citation problems", ""]
+    L += [f"- {c}: `{e}`" for c, e in bad_cites[:50]] or ["None."]
+    L += ["", "## Determinism differences", ""]
+    L += [f"- {c}" for c in det_diff[:50]] or ["None."]
+    L += ["", "## Custom cases (participant-authored, reported separately)", ""]
+    if custom:
+        L += ["| Metric | Score |", "| --- | --- |"]
+        L += [f"| {k} | {custom['metrics'][k]:.2f} |" for k in ("status", "step", "field", "sequence")]
+        L += ["", f"Cases: {custom['n']}", ""]
+        L += [f"- `{c['case_id']}`: {c['note']} - {'PASS' if c['pass'] else 'FAIL'}" for c in custom["cases"]]
+    else:
+        L.append("No custom cases found.")
+    L += ["", "## Score history", "", HISTORY_HEADER, "| --- | --- | --- | --- | --- | --- | --- | --- |"] + history
+    L += ["", failures_text.rstrip()]
+    return "\n".join(L) + "\n"
+
+
+def custom_results():
+    req, exp = CASES_DIR / "requests.csv", CASES_DIR / "expected.csv"
+    if not (req.exists() and exp.exists()):
+        return None
+    with tempfile.TemporaryDirectory() as td:
+        got = run_pipeline(req, Path(td) / "out.csv")
+    expected = read_rows(exp)
+    notes = {}
+    notes_path = CASES_DIR / "notes.csv"
+    if notes_path.exists():
+        notes = {r["case_id"]: r["note"] for r in read_rows(notes_path)}
+    cases = []
+    for e in expected:
+        m = score_outputs([e], got)
+        cases.append({"case_id": e["case_id"], "note": notes.get(e["case_id"], ""),
+                      "pass": m["status"] == 100 and m["sequence"] == 100})
+    return {"metrics": score_outputs(expected, got), "n": len(expected), "cases": cases}
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--label", default="run")
+    ap.add_argument("--no-report", action="store_true")
+    ap.add_argument("--offline", action="store_true",
+                    help="skip the LLM intent gate and audit every request as a deletion request")
+    args = ap.parse_args(argv)
+    global OFFLINE
+    OFFLINE = args.offline
+
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        sample_got = run_pipeline(DATASET / "sample_deletion_requests.csv", td / "sample.csv")
+        full_a = run_pipeline(DATASET / "deletion_requests.csv", td / "a.csv")
+        full_b = run_pipeline(DATASET / "deletion_requests.csv", td / "b.csv")
+    metrics = score_outputs(read_rows(DATASET / "sample_output.csv"), sample_got)
+    audit_at = {r["case_id"]: r["audit_at"] for r in read_rows(DATASET / "deletion_requests.csv")}
+    metrics["citation"], bad = citation_validity(full_a, audit_at, known_ids())
+    metrics["determinism"], diff = determinism(full_a, full_b)
+    head = headline(metrics)
+    custom = custom_results()
+
+    print(" ".join(f"{k}={metrics[k]:.2f}" for k in WEIGHTS), f"headline={head:.2f}")
+    if custom:
+        print("custom:", " ".join(f"{k}={v:.2f}" for k, v in custom["metrics"].items()))
+
+    if not args.no_report:
+        old = REPORT.read_text(encoding="utf-8") if REPORT.exists() else ""
+        history = history_rows(old)
+        history.append(f"| {args.label} | " + " | ".join(f"{metrics[k]:.2f}" for k in WEIGHTS) + f" | {head:.2f} |")
+        failures = FAIL_HEADING + "\n\n_To be written from the score history._\n"
+        if FAIL_HEADING in old:
+            failures = old[old.index(FAIL_HEADING):]
+        EVAL_DIR.mkdir(exist_ok=True)
+        REPORT.write_text(render_report(metrics, head, custom, bad, diff, history, failures), encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    main()
+    sys.exit(0)
