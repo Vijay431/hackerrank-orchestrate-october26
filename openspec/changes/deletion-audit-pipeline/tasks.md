@@ -68,4 +68,4 @@ From group 3 onward, every task's verification also includes: run `python code/e
 
 - [ ] 10.1 Run the full 518-case pipeline from a cold cache, then again from a warm cache; verify byte-identical `output.csv` and zero model calls on the second run
 - [ ] 10.2 Run the final evaluation and record the headline score; verify determinism is 100
-- [ ] 10.3 Confirm the `code.zip` contents exclude `dataset/`, `.cache/`, venvs, and secrets; verify by listing the archive
+- [x] 10.3 Confirm the `code.zip` contents exclude `dataset/`, `.cache/`, venvs, and secrets; verify by listing the archive
