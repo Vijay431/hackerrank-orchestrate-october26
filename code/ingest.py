@@ -386,39 +386,39 @@ def ingest_pdf(info: SourceInfo, text: str):
 
 # ---------------------------------------------------------------- images
 
-IMAGE_PROMPT = PROMPTS / "image_extraction.txt"
+STATE_WORDS = (("DISABLED", re.compile(r"\b(disabled|paused|stopped|inactive)\b", re.I)),
+               ("ACTIVE", re.compile(r"\b(enabled|active|running|syncing)\b", re.I)))
 
 
 def ingest_image(info: SourceInfo, path: Path, client):
+    """Facts from screenshot tile transcripts: each listed id is an observed record; the panel links ids to identifiers."""
     cached = CACHE / "evidence" / f"{info.file_id}.json"
     if cached.exists():
-        data = json.loads(cached.read_text(encoding="utf-8"))
+        tiles = json.loads(cached.read_text(encoding="utf-8"))["tiles"]
     else:
         if client is None:
             info.skipped = "image not extracted (no model client / cache)"
             return
-        raw = client.complete(IMAGE_PROMPT.read_text(encoding="utf-8"), f"file_id={info.file_id}", path,
-                              purpose="image_extraction")
-        data = json.loads(_strip_fence(raw))
+        import vision
+        tiles = vision.transcribe(path, client, CACHE / "tiles")
         cached.parent.mkdir(parents=True, exist_ok=True)
-        cached.write_text(json.dumps(data, sort_keys=True), encoding="utf-8")
-    for rec in data.get("records", []):
-        rid = rec.get("resource_id")
-        sysid = rec.get("system_id") or system_for_resource(rid)
-        attrs = {k: v for k, v in rec.items() if k not in ("identifiers",)}
-        refs = extract_refs({"i": rec.get("identifiers", []), "r": rec})
-        obs = rec.get("observed_at") or info.captured_at
-        info.facts.append(Fact(info.file_id, info.captured_at, obs, sysid, rid, rec.get("category"),
-                               (rec.get("state") or "").upper() or derive_state(attrs), "primary", refs, attrs))
-        if sysid:
-            info.coverage[sysid] = max(info.coverage.get(sysid, ""), obs)
-
-
-def _strip_fence(s: str) -> str:
-    s = s.strip()
-    if s.startswith("```"):
-        s = re.sub(r"^```\w*\n?|```$", "", s).strip()
-    return s
+        cached.write_text(json.dumps({"tiles": tiles}, sort_keys=True), encoding="utf-8")
+    panel = tiles.get("panel", "")
+    panel_refs = extract_refs({"t": panel})
+    for name in sorted(tiles):
+        text = tiles[name]
+        units = [text] if name == "panel" else text.splitlines()
+        for unit in units:
+            refs = panel_refs if name == "panel" else extract_refs({"t": unit})
+            for m in RESOURCE_RE.finditer(unit):
+                rid = m.group(0)
+                state = next((st for st, rx in STATE_WORDS if rx.search(unit)), "FOUND")
+                sysid = system_for_resource(rid)
+                info.facts.append(Fact(info.file_id, info.captured_at, info.captured_at, sysid, rid, None, state,
+                                       "primary", refs, {"tile": name}))
+                info.coverage[sysid] = max(info.coverage.get(sysid, ""), info.captured_at)
+    if not info.facts:
+        info.skipped = "screenshot shows no resource identifiers"
 
 
 # ---------------------------------------------------------------- driver

@@ -53,6 +53,8 @@ def _openrouter_transport(prompt: str, text: str, image_path: Optional[Path]):
             stream=False,
         )
     content = res.choices[0].message.content
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError("empty model response")  # transient: retried by the client, never cached
     usage = res.usage
     return content, int(getattr(usage, "prompt_tokens", 0) or 0), int(getattr(usage, "completion_tokens", 0) or 0)
 

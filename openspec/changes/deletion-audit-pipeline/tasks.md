@@ -35,7 +35,7 @@ From group 3 onward, every task's verification also includes: run `python code/e
 - [x] 5.1 SQL ingestion via Python `sqlite3` into the common fact shape, including `snapshot_scope` times; verify a test extracts `audit_record_1738` with `retention_until` 2031-12-31 from `customer_data_inventory_20260916.sql`
 - [x] 5.2 JSON, log, and text ingestion with identifier regex extraction; verify a test finds known resource IDs and emails in one file of each type
 - [x] 5.3 PDF ingestion via `pypdf` cached at `.cache/evidence/<file_id>.txt`; verify `security_retention_extract.pdf` yields `audit_record_003`, `user_03`, and retain-until 2027-08-25
-- [ ] 5.4 Image extraction prompt in `code/prompts/` and one cached call per PNG to `.cache/evidence/<file_id>.json`; verify all 11 images produce valid JSON and a rerun makes zero calls
+- [x] 5.4 Image extraction prompt in `code/prompts/` and one cached call per PNG to `.cache/evidence/<file_id>.json`; verify all 11 images produce valid JSON and a rerun makes zero calls
 - [x] 5.5 Build the fact index with `captured_at` from the manifest; verify every manifest `file_id` is ingested or explicitly reported as skipped
 
 ## 6. Intent gate
