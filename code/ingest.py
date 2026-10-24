@@ -67,6 +67,14 @@ class Fact:
 
 
 @dataclass
+class Snap:
+    """A point-in-time dump of one system: resources it lacks were absent at `time`."""
+    system_id: str
+    time: str
+    resources: frozenset
+
+
+@dataclass
 class SourceInfo:
     file_id: str
     captured_at: str
@@ -74,7 +82,14 @@ class SourceInfo:
     kind: str
     facts: List[Fact] = field(default_factory=list)
     coverage: Dict[str, str] = field(default_factory=dict)  # system_id -> time the snapshot covers
+    snaps: List[Snap] = field(default_factory=list)
     skipped: Optional[str] = None
+
+    @property
+    def store(self) -> str:
+        """Capture family (file name without its date), used to compare snapshots of the same store."""
+        stem = Path(self.path).stem
+        return re.sub(r"_?\d{8}(_\d{6})?$", "", stem)
 
 
 def system_for_resource(rid: Optional[str]) -> Optional[str]:
@@ -120,6 +135,8 @@ def derive_state(attrs: dict) -> Optional[str]:
         v = attrs.get(k)
         if isinstance(v, str) and v.upper() in {"FOUND", "NOT_FOUND", "IDENTIFIABLE", "REDACTED", "ANONYMIZED", "ACTIVE", "DISABLED", "BLOCKED", "PRESENT", "ABSENT"}:
             return v.upper()
+    if attrs.get("detector"):
+        return "IDENTIFIABLE"
     hs = attrs.get("http_status", attrs.get("status_code"))
     if hs is not None and str(hs).isdigit():
         return "NOT_FOUND" if int(hs) == 404 else ("FOUND" if int(hs) == 200 else None)
@@ -177,6 +194,9 @@ def ingest_sql(info: SourceInfo, text: str):
     if topology != "primary_only" or not scope:
         for s in {f.system_id for f in info.facts if f.system_id}:
             info.coverage.setdefault(s, header_cap or info.captured_at)
+    for system, when in info.coverage.items():
+        rids = frozenset(f.resource_id for f in info.facts if f.system_id == system and f.resource_id)
+        info.snaps.append(Snap(system, when, rids))
 
 
 # ---------------------------------------------------------------- JSON
@@ -196,6 +216,8 @@ def ingest_json(info: SourceInfo, text: str):
         for snap in d["snapshots"]:
             sysid, coll, cap = snap["data_store"], snap["collection"], snap["captured_at"]
             info.coverage[sysid] = max(info.coverage.get(sysid, ""), cap)
+            if not snap.get("records"):  # an empty extract states that the store held nothing
+                info.snaps.append(Snap(sysid, cap, frozenset()))
             for rec in snap.get("records", []):
                 attrs = dict(rec)
                 attrs["collection_name"] = coll
@@ -211,7 +233,7 @@ def ingest_json(info: SourceInfo, text: str):
                     attrs = dict(rec)
                     attrs["group"] = gname
                     info.facts.append(Fact(info.file_id, info.captured_at, obs, sysid, rec.get("resource_id"),
-                                           None, derive_state(attrs), "primary", extract_refs(rec), attrs))
+                                           None, derive_state(attrs) or "FOUND", "primary", extract_refs(rec), attrs))
     else:
         recs = d.get("records", [])
         stamp = d.get("captured_at") or d.get("exported_at") or info.captured_at
@@ -277,13 +299,11 @@ def ingest_log(info: SourceInfo, text: str):
             r = None
         if r:
             recs.append(r)
-    keys_by_trace: Dict[str, set] = {}
+    refs_by_trace: Dict[str, set] = {}
     for r in recs:
         tid = r.get("trace_id")
         if tid:
-            for k in TRACE_KEYS:
-                if r.get(k) not in (None, "null", ""):
-                    keys_by_trace.setdefault(tid, set()).add(r[k])
+            refs_by_trace.setdefault(tid, set()).update(extract_refs({k: v for k, v in r.items() if v != "null"}))
     for r in recs:
         rid = r.get("resource_id")
         if not rid or rid == "null":
@@ -293,14 +313,13 @@ def ingest_log(info: SourceInfo, text: str):
             continue
         attrs = {k: (None if v == "null" else v) for k, v in r.items()}
         refs = set(extract_refs(attrs))
-        for k in keys_by_trace.get(r.get("trace_id"), ()):
-            refs |= extract_refs({"k": k})
+        refs |= refs_by_trace.get(r.get("trace_id"), set())
         system = attrs.get("system") or attrs.get("service")
         if system not in RESOURCE_PREFIX_SYSTEM.values():
             system = system_for_resource(rid) or system
         info.coverage[system] = max(info.coverage.get(system, ""), r["_ts"])
         info.facts.append(Fact(info.file_id, info.captured_at, r["_ts"], system, rid, attrs.get("record_type"),
-                               derive_state(attrs), "primary", frozenset(refs), attrs))
+                               derive_state(attrs) or "FOUND", "primary", frozenset(refs), attrs))
 
 
 # ---------------------------------------------------------------- text / PDF
@@ -347,11 +366,14 @@ def ingest_pdf(info: SourceInfo, text: str):
     base = {"retain_until": retain.group(1) if retain else None}
     for m in RESOURCE_RE.finditer(text):
         rid = m.group(0)
+        attrs = dict(base)
+        if re.search(r"\bfile\s+\S+\.pdf", text) and rid.startswith("support"):
+            attrs["file"] = True
         info.facts.append(Fact(info.file_id, info.captured_at, info.captured_at, system_for_resource(rid), rid,
-                               None, None, "primary", refs, dict(base)))
+                               None, "FOUND", "primary", refs, attrs))
     for m in STATEMENT_RE.finditer(text):
         info.facts.append(Fact(info.file_id, info.captured_at, info.captured_at, "account_history_service",
-                               m.group(0), None, None, "primary", refs, {"document": "statement"}))
+                               m.group(0), "USER_PROFILE", "FOUND", "primary", refs, {"document": "statement"}))
     info.facts.append(Fact(info.file_id, info.captured_at, info.captured_at, "", None, None, None, "primary", refs,
                            {"document_text": text}))
 

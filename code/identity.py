@@ -67,10 +67,18 @@ class IdentityIndex:
             for e in s.emails:
                 self._by_email.setdefault(e, uid)
         self._current = {norm_email(i.email) for i in identities}
+        self._by_value: Dict[str, str] = {}
+        for uid, s in self._subjects.items():
+            for v in s.values():
+                self._by_value.setdefault(v, uid)
 
     def resolve_email(self, email: str) -> Optional[Subject]:
         uid = self._by_email.get(norm_email(email))
         return self._subjects.get(uid) if uid else None
+
+    def user_of_value(self, value: str) -> Optional[str]:
+        """user_id owning a normalized identifier (email, phone digits, hash, user_id)."""
+        return self._by_value.get(value)
 
     def subject(self, user_id: str) -> Optional[Subject]:
         return self._subjects.get(user_id)
