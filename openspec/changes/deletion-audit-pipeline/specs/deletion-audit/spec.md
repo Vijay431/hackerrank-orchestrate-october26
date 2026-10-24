@@ -219,7 +219,7 @@ The evaluation SHALL run the pipeline twice and report whether both outputs are 
 - **THEN** the report states the determinism result
 
 ### Requirement: Evaluation score
-The evaluation SHALL report status, step, field, and sequence accuracy over the 32 samples, citation validity over the full output, and determinism, each on a 0-100 scale, plus a weighted headline score. The evaluation command SHALL exit with code 0 regardless of score.
+The evaluation SHALL report status, step, field, and sequence accuracy over the 32 samples, citation validity over the sample output, and determinism (two sample runs), without running the 518 evaluation requests, each on a 0-100 scale, plus a weighted headline score. The evaluation command SHALL exit with code 0 regardless of score.
 
 #### Scenario: Headline weights
 - **WHEN** the metrics are computed

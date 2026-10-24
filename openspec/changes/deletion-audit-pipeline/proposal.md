@@ -15,6 +15,8 @@ Northstar Shop's deletion workflow reports "Complete" while personal data surviv
 - Add a step planner emitting FINDING, REMEDIATION, VERIFICATION steps in the contract's fixed order and schema.
 - Build the evaluation harness first; it reports a weighted headline score combining sample accuracy, citation validity, and determinism.
 - Add an evaluation harness scoring against `dataset/sample_output.csv` and participant-authored cases, plus a determinism check, producing `evaluation/evaluation_report.md` and `evaluation/usage_report.md`.
+- Add a root `Makefile` wrapping the documented commands (`install`, `run`, `dev`, `eval`, `validate`, `test`, `usage`, `package`, `graph`); the README's plain `python` commands stay the canonical, shell-independent path.
+- Add a "Skill usage" section to `AGENTS.md`: agents use caveman for terse replies and query `graphify-out/` before broad codebase searches, refreshing the graph with `make graph` after code changes.
 
 ## Capabilities
 
@@ -32,3 +34,4 @@ Northstar Shop's deletion workflow reports "Complete" while personal data surviv
 - Requires `OPENROUTER_API_KEY` in the environment; never committed or logged.
 - Outputs: `output.csv`, `evaluation/evaluation_report.md`, `evaluation/usage_report.md`; `README.md` gains setup and run instructions.
 - Hidden organizer answers are never used; evaluation uses only `dataset/sample_output.csv` and custom cases.
+- New root `Makefile` (included in `code.zip`); `AGENTS.md` gains a skill-usage section; `graphify-out/` refreshed via `graphify update`.

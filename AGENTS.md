@@ -46,10 +46,10 @@ Read `problem_statement.md` for the full participant-facing specification.
 
 The log file is named `log.txt` and lives in the same directory as this `AGENTS.md` file — the repository root.
 
-| Platform | Path |
-|---|---|
+| Platform      | Path                                       |
+| ------------- | ------------------------------------------ |
 | macOS / Linux | `<directory containing AGENTS.md>/log.txt` |
-| Windows | `<directory containing AGENTS.md>\log.txt` |
+| Windows       | `<directory containing AGENTS.md>\log.txt` |
 
 Resolve the path relative to this file. Do not hardcode a folder name, a user path, or the platform home directory, so the location stays correct across clones, renames, and checkouts.
 
@@ -261,33 +261,33 @@ For a `COMPLETE` case, include only evidence-backed verification steps proving t
 
 Findings:
 
-| Operation | State | Meaning |
-|---|---|---|
-| `REPORT_REMAINING_RECORD` | `PRESENT` | A record that should have been deleted still exists. |
-| `REPORT_EXPOSED_PII` | `PRESENT` | A record may remain, but identifiers that policy requires to be redacted or anonymized are still exposed. |
-| `REPORT_ACTIVE_DATA_FLOW` | `ACTIVE` | An active process can copy or recreate the user's data. |
-| `REPORT_RESTORE_RISK` | `ACTIVE` | A backup or restore path can bring deleted data back. |
+| Operation                 | State     | Meaning                                                                                                   |
+| ------------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| `REPORT_REMAINING_RECORD` | `PRESENT` | A record that should have been deleted still exists.                                                      |
+| `REPORT_EXPOSED_PII`      | `PRESENT` | A record may remain, but identifiers that policy requires to be redacted or anonymized are still exposed. |
+| `REPORT_ACTIVE_DATA_FLOW` | `ACTIVE`  | An active process can copy or recreate the user's data.                                                   |
+| `REPORT_RESTORE_RISK`     | `ACTIVE`  | A backup or restore path can bring deleted data back.                                                     |
 
 Remediation:
 
-| Operation | State | Meaning |
-|---|---|---|
-| `DISABLE_DATA_FLOW` | `DISABLED` | Stop a process that can copy or recreate the data. |
-| `BLOCK_RESTORE` | `BLOCKED` | Prevent the affected backup from restoring the user's data. |
-| `DELETE_RECORD` | `ABSENT` | Remove the entire record. |
-| `REDACT_RECORD` | `REDACTED` | Keep the record but remove the identifying fields required by policy. |
-| `ANONYMIZE_RECORD` | `ANONYMIZED` | Keep the record after irreversibly unlinking it from the user. |
+| Operation           | State        | Meaning                                                               |
+| ------------------- | ------------ | --------------------------------------------------------------------- |
+| `DISABLE_DATA_FLOW` | `DISABLED`   | Stop a process that can copy or recreate the data.                    |
+| `BLOCK_RESTORE`     | `BLOCKED`    | Prevent the affected backup from restoring the user's data.           |
+| `DELETE_RECORD`     | `ABSENT`     | Remove the entire record.                                             |
+| `REDACT_RECORD`     | `REDACTED`   | Keep the record but remove the identifying fields required by policy. |
+| `ANONYMIZE_RECORD`  | `ANONYMIZED` | Keep the record after irreversibly unlinking it from the user.        |
 
 Verification:
 
-| Operation | State | Meaning |
-|---|---|---|
-| `VERIFY_RECORD_ABSENT` | `ABSENT` | Confirm that a record no longer exists. |
-| `VERIFY_RECORD_PRESENT` | `PRESENT` | Confirm that a policy-required retained record still exists. |
-| `VERIFY_RECORD_REDACTED` | `REDACTED` | Confirm that required identifying fields were removed. |
-| `VERIFY_RECORD_ANONYMIZED` | `ANONYMIZED` | Confirm that the record can no longer be linked to the user. |
-| `VERIFY_DATA_FLOW_DISABLED` | `DISABLED` | Confirm that the relevant data flow is inactive. |
-| `VERIFY_RESTORE_BLOCKED` | `BLOCKED` | Confirm that the affected data cannot be restored. |
+| Operation                   | State        | Meaning                                                      |
+| --------------------------- | ------------ | ------------------------------------------------------------ |
+| `VERIFY_RECORD_ABSENT`      | `ABSENT`     | Confirm that a record no longer exists.                      |
+| `VERIFY_RECORD_PRESENT`     | `PRESENT`    | Confirm that a policy-required retained record still exists. |
+| `VERIFY_RECORD_REDACTED`    | `REDACTED`   | Confirm that required identifying fields were removed.       |
+| `VERIFY_RECORD_ANONYMIZED`  | `ANONYMIZED` | Confirm that the record can no longer be linked to the user. |
+| `VERIFY_DATA_FLOW_DISABLED` | `DISABLED`   | Confirm that the relevant data flow is inactive.             |
+| `VERIFY_RESTORE_BLOCKED`    | `BLOCKED`    | Confirm that the affected data cannot be restored.           |
 
 Do not invent additional phases, operations, or states.
 
@@ -358,12 +358,12 @@ Write the required evaluation metrics, custom cases, and usage details directly 
 
 The participant submission contains:
 
-| Item | Description |
-|---|---|
-| `code.zip` | Runnable solution, prompts, configuration, `README.md`, and the `evaluation/` reports |
-| `output.csv` | One answer row for every evaluation request |
-| `chat_transcript` | The root `log.txt` file generated by the coding agent |
-| AI interview | Explanation of the architecture, investigation approach, remediation planning, and evaluation |
+| Item              | Description                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| `code.zip`        | Runnable solution, prompts, configuration, `README.md`, and the `evaluation/` reports         |
+| `output.csv`      | One answer row for every evaluation request                                                   |
+| `chat_transcript` | The root `log.txt` file generated by the coding agent                                         |
+| AI interview      | Explanation of the architecture, investigation approach, remediation planning, and evaluation |
 
 Do not include `dataset/`, virtual environments, dependency caches, nested archives, API keys, credentials, real personal data, or sensitive configuration in `code.zip`.
 
@@ -420,3 +420,10 @@ Before responding to any user message, confirm:
 - [ ] I will not log secrets or real personal data.
 - [ ] I will use only participant-facing files for predictions.
 - [ ] I will preserve the Ghost Data Still Exists deletion-audit and output contract in §6.
+
+---
+
+## 10. Skill Usage
+
+- `caveman`: keep agent replies terse; code, commands, paths, and errors stay exact.
+- `graphify`: for codebase questions, query `graphify-out/` first. After code changes, run `make graph` to refresh the graph with agent harness.
