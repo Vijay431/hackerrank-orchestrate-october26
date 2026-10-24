@@ -12,7 +12,8 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 from identity import norm_phone
 from loader import EvidenceFile
-from paths import CACHE, DATASET, EVIDENCE, PROMPTS
+from paths import CACHE, DATASET, EVIDENCE
+from progress import Progress
 
 RESOURCE_PREFIX_SYSTEM = {
     "account": "account_service", "search": "search_service", "analytics": "analytics_platform",
@@ -445,4 +446,11 @@ def ingest_file(ef: EvidenceFile, client=None, base: Path = DATASET) -> SourceIn
 
 
 def ingest_all(manifest: Iterable[EvidenceFile], client=None) -> Dict[str, SourceInfo]:
-    return {ef.file_id: ingest_file(ef, client) for ef in manifest}
+    manifest = list(manifest)
+    bar = Progress("evidence", len(manifest))
+    out = {}
+    for ef in manifest:
+        out[ef.file_id] = ingest_file(ef, client)
+        bar.update()
+    bar.close()
+    return out

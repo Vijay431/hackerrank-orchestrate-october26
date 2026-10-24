@@ -8,3 +8,6 @@ graphify-out/
 output.csv
 __pycache__/
 .venv/
+.cache/
+.pytest_cache/
+code.zip

@@ -1,25 +1,24 @@
-# Graph Report - hackerrank-orchestrate-october26  (2026-10-24)
+# Graph Report - hackerrank-orchestrate-october26  (2026-10-25)
 
 ## Corpus Check
-- 100 files · ~122,999 words
+- 53 files · ~92,180 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 40 file(s) not represented in the graph (top: .log 26, .csv 9, (none) 4)
 
 ## Summary
-- 219 nodes · 307 edges · 18 communities (15 shown, 3 thin omitted)
-- Extraction: 72% EXTRACTED · 28% INFERRED · 0% AMBIGUOUS · INFERRED: 87 edges (avg confidence: 0.88)
+- 385 nodes · 740 edges · 19 communities (17 shown, 2 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 68 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
 - Trace Submission Rules
-- Deletion Decision Rules
-- Pipeline Architecture
-- OpsX Apply/Explore
+- loader.py
+- ingest.py
+- pathlib
 - Customer Evidence Documents
-- Eval Harness and Tasks
+- intent.py
 - OpsX Archive/Sync
-- OpenSpec Propose Workflow
-- OpsX New/Continue
+- Evaluation Report
+- vision.py
 - Account Admin Screens
 - Search Index Screens
 - Export and Registry Screens
@@ -27,125 +26,133 @@
 - Backup Restore Risk
 - Marketing Profile Flow
 - OpenSpec Config
+- evaluation/main.py
+- state.py
 
 ## God Nodes (most connected - your core abstractions)
-1. `Ghost Data Still Exists challenge` - 16 edges
-2. `Change: deletion-audit-pipeline` - 11 edges
-3. `agent-trace.zip submission` - 8 edges
-4. `D5 State reconstruction: latest fact at or before audit_at, replica drift` - 8 edges
-5. `D7 Step planning and ordering by operation rank, deterministic serialization` - 8 edges
-6. `Customer Platform Shift Handover 2026-10-01` - 8 edges
-7. `/opsx:apply command (Implement tasks from a change)` - 7 edges
-8. `D3 Ingestion per format (SQL, JSON/log, PDF, PNG)` - 7 edges
-9. `Requirement: policy treatment` - 7 edges
-10. `/opsx:archive command (Archive completed change)` - 6 edges
+1. `Fact` - 18 edges
+2. `Ghost Data Still Exists challenge` - 17 edges
+3. `SourceInfo` - 16 edges
+4. `extract_refs()` - 12 edges
+5. `ingest_file()` - 12 edges
+6. `audit()` - 12 edges
+7. `assess()` - 12 edges
+8. `main()` - 11 edges
+9. `IdentityIndex` - 11 edges
+10. `system_for_resource()` - 11 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Requirement: step object schema` --implements--> `Step schema (7 fields)`  [INFERRED]
-  openspec/changes/deletion-audit-pipeline/specs/deletion-audit/spec.md → problem_statement.md
-- `Non-goals: no LLM reasoning over evidence, no second model, no golden answers` --semantically_similar_to--> `Never use organizer-only truth or golden answers`  [INFERRED] [semantically similar]
-  openspec/changes/deletion-audit-pipeline/design.md → AGENTS.md
+- `Failures found and improvements made` --references--> `ActivityLinker`  [INFERRED]
+  evaluation/evaluation_report.md → code/state.py
+- `Packaging code.zip` --semantically_similar_to--> `Submission artifacts (code.zip, output.csv, transcript)`  [INFERRED] [semantically similar]
+  README.md → problem_statement.md
 - `Support ticket CS-4827 attachment (region ap-south)` --semantically_similar_to--> `support_platform (SUPPORT_MESSAGE/ATTACHMENT)`  [INFERRED] [semantically similar]
   dataset/evidence/documents/delivery_correction_attachment.pdf → dataset/evidence/records/customer_account_handover_20261001.txt
-- `Requirement: output file contract` --implements--> `output.csv contract (case_id,deletion_status,steps_json)`  [INFERRED]
-  openspec/changes/deletion-audit-pipeline/specs/deletion-audit/spec.md → problem_statement.md
-- `D7 Step planning and ordering by operation rank, deterministic serialization` --implements--> `Step schema (7 fields)`  [INFERRED]
-  openspec/changes/deletion-audit-pipeline/design.md → problem_statement.md
+- `add()` --indirect_call--> `steps()`  [INFERRED]
+  code/planner.py → tests/test_pipeline.py
+- `Output format and ordering` --semantically_similar_to--> `Allowed step operations (findings, remediation, verification)`  [INFERRED] [semantically similar]
+  README.md → AGENTS.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **OpenSpec change lifecycle commands** — claude_commands_opsx_new, claude_commands_opsx_continue, claude_commands_opsx_apply, claude_commands_opsx_verify, claude_commands_opsx_sync, claude_commands_opsx_archive [INFERRED 0.85]
-- **Deletion audit pipeline stages** — openspec_changes_deletion_audit_pipeline_design_d3_ingestion_formats, openspec_changes_deletion_audit_pipeline_design_d4_identity_linking, openspec_changes_deletion_audit_pipeline_design_d5_state_reconstruction, openspec_changes_deletion_audit_pipeline_design_d6_policy_table, openspec_changes_deletion_audit_pipeline_design_d7_step_planning [EXTRACTED 1.00]
-- **OpenSpec change artifacts** — openspec_changes_deletion_audit_pipeline_proposal_doc, openspec_changes_deletion_audit_pipeline_design_doc, openspec_changes_deletion_audit_pipeline_specs_deletion_audit_spec_doc, openspec_changes_deletion_audit_pipeline_tasks_doc [EXTRACTED 1.00]
-- **OpenSpec skills workflow** — _claude_skills_openspec_propose_skill_doc, _claude_skills_openspec_sync_specs_skill_doc, _claude_skills_openspec_update_change_skill_doc, _claude_skills_openspec_verify_change_skill_doc [INFERRED 0.85]
+- **LLM prompts used by pipeline** — code_prompts_intent_v1, code_prompts_image_tile_v1, evaluation_usage_cost [INFERRED 0.75]
 - **Policy-retained records (audit log, finance register, compliance journal)** — dataset_evidence_documents_legal_retention_register_20260529_retention_policy, dataset_evidence_documents_security_retention_extract_audit_record_003, dataset_evidence_records_customer_account_handover_20261001_security_service [INFERRED 0.75]
-- **Northstar Shop internal console screenshots** — dataset_evidence_images_account_admin_console_20260926, dataset_evidence_images_analytics_profile_view_20260713, dataset_evidence_images_backup_restore_console_20260429, dataset_evidence_images_connector_management_console_20260807 [INFERRED 0.85]
 - **Northstar Shop admin console evidence screens** — dataset_evidence_images_customer_export_console_20260618, dataset_evidence_images_deleted_account_reference_20260310, dataset_evidence_images_marketing_profile_console, dataset_evidence_images_object_storage_browser_20260213 [INFERRED 0.85]
+- **Northstar Shop internal console screenshots** — dataset_evidence_images_account_admin_console_20260926, dataset_evidence_images_analytics_profile_view_20260713, dataset_evidence_images_backup_restore_console_20260429, dataset_evidence_images_connector_management_console_20260807 [INFERRED 0.85]
 - **Northstar Shop internal console evidence screenshots** — dataset_evidence_images_search_index_inspector_20260901_screenshot, dataset_evidence_images_security_audit_explorer_20260905_screenshot, dataset_evidence_images_support_ticket_console_20260524_screenshot [INFERRED 0.85]
+- **Required submission deliverables** — problem_statement_submission_artifacts, evaluation_evaluation_report, evaluation_usage_report, readme_packaging [INFERRED 0.85]
 
-## Communities (18 total, 3 thin omitted)
+## Communities (19 total, 2 thin omitted)
 
 ### Community 0 - "Trace Submission Rules"
+Cohesion: 0.06
+Nodes (48): classify(), classify_all(), parse_decision(), prior_classifications(), Request-intent gate: one cached LLM call per case decides if deletion is…, CLASSIFY_REQUEST events at or before audit_at for the given resources., Run classification in a 6-worker pool; results are keyed by case_id so order…, LLMClient (+40 more)
+
+### Community 1 - "loader.py"
+Cohesion: 0.07
+Nodes (35): base64, OpenRouter client for the single allowed model, with a disk cache and usage…, files(), main(), Build code.zip (runnable solution, prompts, config, README, evaluation reports)…, Repo-root-relative paths shared by all modules., Stderr progress for long stages: a live bar on a terminal, 10% line steps…, main() (+27 more)
+
+### Community 2 - "ingest.py"
 Cohesion: 0.10
-Nodes (24): agent-trace.zip submission, Trace location: antigravity, Trace location: claude code, Trace location: codex, Trace location: opencode, Trace location: other harnesses, Constraints that make submission evaluable (deterministic, terminal-runnable), Never use organizer-only truth or golden answers (+16 more)
+Nodes (28): IdentityIndex, norm_email(), norm_phone(), norm_value(), Identity resolution over current and historical identifiers. Rules: emails and…, All normalized identifier strings (user_id, emails, phones, hashes)., user_id owning a normalized identifier (email, phone digits, hash, user_id)., Subject (+20 more)
 
-### Community 1 - "Deletion Decision Rules"
-Cohesion: 0.13
-Nodes (25): Deletion decision rules, D4 Identity and linking (names never sufficient alone), D5 State reconstruction: latest fact at or before audit_at, replica drift, D6 Policy table from deletion_rules.csv with category resolver and overrides, Policy engine applying deletion_rules.csv, Requirement: account tombstone treatment, Requirement: audit time cutoff, Requirement: claims are not proof (+17 more)
-
-### Community 2 - "Pipeline Architecture"
-Cohesion: 0.11
-Nodes (22): Evidence rules, D10 Parallelism: 6 workers, sorted collection, D1 Pipeline stages: ingest, index, per-case parallel, sorted write, D2 Fact model: normalized record shape per source, D3 Ingestion per format (SQL, JSON/log, PDF, PNG), D7 Step planning and ordering by operation rank, deterministic serialization, D8 Citation rule: one latest covering file per case, D9 LLM client and SHA-256 keyed cache, temperature 0 (+14 more)
-
-### Community 3 - "OpsX Apply/Explore"
-Cohesion: 0.11
-Nodes (18): /opsx:apply command (Implement tasks from a change), openspec CLI usage, Project check (openspec list --json root), Store selection (--store flag), /opsx:explore command (Explore mode thinking partner), Explore mode: thinking not implementing, openspec CLI usage, Project check (openspec list --json root) (+10 more)
+### Community 3 - "pathlib"
+Cohesion: 0.14
+Nodes (34): _bool(), derive_state(), extract_refs(), Fact, ingest_all(), ingest_file(), ingest_free_text(), ingest_image() (+26 more)
 
 ### Community 4 - "Customer Evidence Documents"
+Cohesion: 0.07
+Nodes (34): agent-trace.zip submission, Trace location: antigravity, Trace location: claude code, Trace location: codex, Trace location: opencode, Trace location: other harnesses, AGENTS.md agent rules, Deletion decision rules (+26 more)
+
+### Community 5 - "intent.py"
+Cohesion: 0.17
+Nodes (21): argparse, citation_validity(), custom_results(), determinism(), headline(), history_rows(), known_ids(), main() (+13 more)
+
+### Community 6 - "OpsX Archive/Sync"
+Cohesion: 0.16
+Nodes (16): fixture, main, parametrize, expected(), _index(), key(), sample_rows(), steps() (+8 more)
+
+### Community 7 - "Evaluation Report"
 Cohesion: 0.12
 Nodes (18): Northstar Shop Customer Statement NST-2026-0718-1842, Order ORD-20261260 and payment record, Delivery Address Correction Request CS-4827, Support ticket CS-4827 attachment (region ap-south), Disputed Orders and Tax Records Register May 2026, Finance Records (register owner), Seven-year retention of disputed order and tax records, Compliance Journal Extract CJX-20260905-0630 (+10 more)
 
-### Community 5 - "Eval Harness and Tasks"
-Cohesion: 0.24
-Nodes (14): D11 Evaluation harness metrics and weighted headline, Evaluation harness built first, Task group 10: Integration (cold/warm run, code.zip), Task group 1: Setup (requirements, .gitignore, module layout), Task group 2: Evaluation harness first, Task group 3: Dataset loading and identity, Task group 4: LLM client and cache, Task group 5: Evidence ingestion (+6 more)
-
-### Community 6 - "OpsX Archive/Sync"
-Cohesion: 0.14
-Nodes (14): /opsx:archive command (Archive completed change), openspec CLI usage, Project check (openspec list --json root), Store selection (--store flag), /opsx:sync command (Sync delta specs to main specs), openspec CLI usage, Project check (openspec list --json root), Store selection (--store flag) (+6 more)
-
-### Community 7 - "OpenSpec Propose Workflow"
-Cohesion: 0.18
-Nodes (13): Change artifacts: proposal, design, specs, tasks, openspec-propose, OpenSpec spec-driven change workflow, Propose change: generate proposal, design, specs, tasks in one step, Delta spec operations: ADDED, MODIFIED, REMOVED, RENAMED, openspec-sync-specs, Sync delta specs (ADDED/MODIFIED/REMOVED/RENAMED) to main specs, openspec-update-change (+5 more)
-
-### Community 8 - "OpsX New/Continue"
+### Community 8 - "vision.py"
 Cohesion: 0.17
-Nodes (12): /opsx:continue command (Create next artifact), openspec CLI usage, Project check (openspec list --json root), Store selection (--store flag), /opsx:new command (Start new change), openspec CLI usage, Project check (openspec list --json root), Store selection (--store flag) (+4 more)
+Nodes (14): Versioned prompts: prompts/<name>/<version>.txt, with the active version of…, content_bottom(), has_text(), _png(), Path, Screenshot reading: crop the table and detail panel into tiles, transcribe each…, First y at or after y0 where MAX_GAP consecutive blank rows follow the last…, False for tiles that hold only background, row stripes and borders (the model… (+6 more)
 
 ### Community 9 - "Account Admin Screens"
 Cohesion: 0.17
-Nodes (12): Account admin console screenshot (2026-09-26), Account record (account service, direct identifiers still present), Customer Operations console (customer profile with email, phone, address, orders, support link), Order records (delivered and returned orders), Linked support ticket and support record, Analytics profile view screenshot (2026-07-13), Analytics profile record exposing email and user reference, Pulse Analytics user profile console (event timeline, sessions, profile attributes) (+4 more)
+Nodes (16): Account tombstone (retain stable user ref, redact identifiers), Allowed step operations and states, audit_at time cutoff, Reported statuses are claims, not proof, Deletion-audit agent, deletion_rules.csv policy, deletion_status: COMPLETE/INCOMPLETE/NOT_APPLICABLE, evaluation_report.md and usage_report.md (+8 more)
 
 ### Community 10 - "Search Index Screens"
+Cohesion: 0.17
+Nodes (12): Account admin console screenshot (2026-09-26), Account record (account service, direct identifiers still present), Customer Operations console (customer profile with email, phone, address, orders, support link), Order records (delivered and returned orders), Linked support ticket and support record, Analytics profile view screenshot (2026-07-13), Analytics profile record exposing email and user reference, Pulse Analytics user profile console (event timeline, sessions, profile attributes) (+4 more)
+
+### Community 11 - "Export and Registry Screens"
+Cohesion: 0.20
+Nodes (8): cache_key(), LLMError, _openrouter_transport(), Path, Real call through the OpenRouter SDK. Returns (content, input_tokens,…, Return the model response, from cache when the same model/prompt/input was seen., RuntimeError, Transport
+
+### Community 12 - "OpsX Update"
 Cohesion: 0.20
 Nodes (11): Northstar Shop internal console UI family, customer_directory_v3 search index (prod-eu), Indexed customer document exposing name, email, customer reference, Search Console customer search screenshot (2026-09-01), Near-match email record without reference (decoy), Account closure recorded event (audit_record_003), Sentinel account events screenshot (2026-09-05), Signed account audit events for one user subject (+3 more)
 
-### Community 11 - "Export and Registry Screens"
+### Community 13 - "Backup Restore Risk"
 Cohesion: 0.24
 Nodes (10): Customer Download Center data exports screenshot, Export detail: profile, orders, saved addresses; expires after 7 days, Customer data export jobs list (zip packages), Customer Reference Registry retained reference screenshot, Linked records: orders, support cases, finance, Retained customer key reference (account tombstone), Nimbus Object Storage browser screenshot, Support attachment objects (delivery, return labels, invoice) (+2 more)
 
-### Community 12 - "OpsX Update"
-Cohesion: 0.50
-Nodes (4): /opsx:update command (Revise planning artifacts), openspec CLI usage, Project check (openspec list --json root), Store selection (--store flag)
+### Community 14 - "Marketing Profile Flow"
+Cohesion: 0.42
+Nodes (9): importlib_util, pytest_approx(), row(), step(), test_determinism(), test_future_dated_citation_is_flagged(), test_headline_formula(), test_perfect_match_scores_100() (+1 more)
 
-### Community 13 - "Backup Restore Risk"
+### Community 16 - "evaluation/main.py"
 Cohesion: 0.50
 Nodes (4): Backup restore console screenshot (2026-04-29), Backup archive record (account-keyed archive with retention end and restore history), Restore risk (archive restorable, restores completed), Vault Recovery Manager console (customer-platform weekly archives)
 
-### Community 14 - "Marketing Profile Flow"
+### Community 17 - "state.py"
 Cohesion: 0.67
 Nodes (4): Audience Operations marketing profile screenshot, Audience membership, segments and campaign metrics, Profile refreshed from live data (active data flow), Live marketing profile with direct identifiers
 
 ## Knowledge Gaps
-- **71 isolated node(s):** `openspec CLI usage`, `Store selection (--store flag)`, `Project check (openspec list --json root)`, `openspec CLI usage`, `Store selection (--store flag)` (+66 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 78 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **35 isolated node(s):** `Usage Report`, `Citation problems`, `Custom cases (participant-authored, reported separately)`, `Determinism differences`, `Metrics (32 public samples and custom cases; never the 518 evaluation requests)` (+30 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 115 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Ghost Data Still Exists challenge` connect `Trace Submission Rules` to `Deletion Decision Rules`, `Eval Harness and Tasks`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
-- **Why does `OpenSpec spec-driven change workflow` connect `OpenSpec Propose Workflow` to `Pipeline Architecture`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Why does `Change: deletion-audit-pipeline` connect `Pipeline Architecture` to `Trace Submission Rules`, `Deletion Decision Rules`, `Eval Harness and Tasks`, `OpenSpec Propose Workflow`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
-- **Are the 2 inferred relationships involving `Change: deletion-audit-pipeline` (e.g. with `OpenSpec spec-driven change workflow` and `Only allowed model: deepseek/deepseek-v4.1-flash via OpenRouter SDK`) actually correct?**
-  _`Change: deletion-audit-pipeline` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 2 inferred relationships involving `agent-trace.zip submission` (e.g. with `log.txt session logging contract` and `Submission artifacts (code.zip, output.csv, transcript)`) actually correct?**
-  _`agent-trace.zip submission` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 5 inferred relationships involving `D5 State reconstruction: latest fact at or before audit_at, replica drift` (e.g. with `audit_at time cutoff` and `Reported statuses are claims, not proof`) actually correct?**
-  _`D5 State reconstruction: latest fact at or before audit_at, replica drift` has 5 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 4 inferred relationships involving `D7 Step planning and ordering by operation rank, deterministic serialization` (e.g. with `Step schema (7 fields)` and `Requirement: deterministic serialization`) actually correct?**
-  _`D7 Step planning and ordering by operation rank, deterministic serialization` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Evaluation Report` connect `Customer Evidence Documents` to `Trace Submission Rules`?**
+  _High betweenness centrality (0.196) - this node is a cross-community bridge._
+- **Why does `Failures found and improvements made` connect `Trace Submission Rules` to `Customer Evidence Documents`?**
+  _High betweenness centrality (0.195) - this node is a cross-community bridge._
+- **Are the 6 inferred relationships involving `Fact` (e.g. with `Policy` and `FactIndex`) actually correct?**
+  _`Fact` has 6 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 3 inferred relationships involving `SourceInfo` (e.g. with `FactIndex` and `_index()`) actually correct?**
+  _`SourceInfo` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `Usage Report`, `Citation problems`, `Custom cases (participant-authored, reported separately)` to the rest of the system?**
+  _35 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Trace Submission Rules` be split into smaller, more focused modules?**
+  _Cohesion score 0.06398809523809523 - nodes in this community are weakly interconnected._
+- **Should `loader.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.06567992599444958 - nodes in this community are weakly interconnected._

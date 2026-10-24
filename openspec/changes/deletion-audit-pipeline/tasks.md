@@ -12,7 +12,7 @@ From group 3 onward, every task's verification also includes: run `python code/e
 
 - [x] 2.1 Make `code/main.py` write a stub `output.csv` (518 rows, `NOT_APPLICABLE`, `[]`) so the harness has input; verify 518 sorted rows
 - [x] 2.2 Implement `code/evaluation/main.py` scoring status, step, field, and sequence accuracy against `dataset/sample_output.csv` per D11; verify it prints all four metrics for the stub
-- [x] 2.3 Implement citation validity over the full output (known id, timestamp at or before `audit_at`), listing offending cases; verify a fixture with a future-dated citation scores below 100
+- [x] 2.3 Implement citation validity over the sample output (known id, timestamp at or before `audit_at`), listing offending cases; verify a fixture with a future-dated citation scores below 100
 - [x] 2.4 Implement the determinism check (two pipeline runs, byte comparison, differing rows listed); verify the stub scores 100
 - [x] 2.5 Compute the headline score (0.25 status, 0.20 step, 0.15 field, 0.20 sequence, 0.10 citation, 0.10 determinism) and always exit 0; verify the formula with a unit test
 - [x] 2.6 Add at least three custom cases under `code/evaluation/cases/` (non-deletion request, historical-email subject, tombstone or replica-drift case) with expected outputs; verify they run and are reported separately
@@ -69,3 +69,11 @@ From group 3 onward, every task's verification also includes: run `python code/e
 - [x] 10.1 Run the full 518-case pipeline from a cold cache, then again from a warm cache; verify byte-identical `output.csv` and zero model calls on the second run
 - [x] 10.2 Run the final evaluation and record the headline score; verify determinism is 100
 - [x] 10.3 Confirm the `code.zip` contents exclude `dataset/`, `.cache/`, venvs, and secrets; verify by listing the archive
+
+## 11. Developer tooling and agent guidance
+
+- [x] 11.1 Add root `Makefile` per D12 with a `help` default target; verify `make help` lists every target and `make dev` and `make test` succeed without an API key
+- [x] 11.2 Add `Makefile` to `INCLUDE` in `code/package.py`; verify `make package` lists it in the archive
+- [x] 11.3 Add a "Makefile shortcuts" table to `README.md` beside the existing raw commands; verify both are present
+- [x] 11.4 Add a "Skill usage" section to `AGENTS.md` (caveman for terse agent replies; graphify query first for codebase questions, `make graph` after code changes); verify §0–§9 are unchanged
+- [x] 11.5 Run `make graph`; verify `graphify-out/graph.json` and `GRAPH_REPORT.md` include the new modules

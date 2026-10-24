@@ -1,15 +1,16 @@
 """Request-intent gate: one cached LLM call per case decides if deletion is authorized."""
 import json
 import re
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Iterable, List
 
 from llm import LLMClient
 from loader import Activity, Request
-from paths import PROMPTS
+import prompt_registry
+from progress import Progress
 
 WORKERS = 6
-PROMPT = (PROMPTS / "intent.txt").read_text(encoding="utf-8")
+PROMPT = prompt_registry.load("intent")
 
 
 def prior_classifications(req: Request, activity: Iterable[Activity], resource_ids: Iterable[str]) -> List[str]:
@@ -39,4 +40,8 @@ def classify_all(client: LLMClient, requests: List[Request], context_for) -> Dic
     """Run classification in a 6-worker pool; results are keyed by case_id so order never matters."""
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         futures = {r.case_id: pool.submit(classify, client, r, context_for(r)) for r in requests}
+        bar = Progress("intent", len(futures))
+        for _ in as_completed(futures.values()):
+            bar.update()
+        bar.close()
         return {cid: f.result() for cid, f in futures.items()}

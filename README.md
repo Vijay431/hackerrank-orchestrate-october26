@@ -183,6 +183,24 @@ python code/usage_report.py                             # writes evaluation/usag
 python -m pytest tests                                  # unit tests
 ```
 
+Makefile shortcuts (aliases for the commands above; set `PY=python` to use another interpreter, run `make help` to list them):
+
+| Target | Runs |
+| --- | --- |
+| `make install` | create `.venv`, install `code/requirements.txt` |
+| `make run` | `code/main.py` on the 518 requests, then `code/validate_output.py` (intent gate on) |
+| `make dev` | offline `main.py --assume-deletion` then `evaluation/main.py --offline` (no API key) |
+| `make eval` | `code/evaluation/main.py` (golden 32 samples + custom cases only, never the 518 requests) |
+| `make validate` | `code/validate_output.py` |
+| `make test` | `pytest tests` |
+| `make usage` | `code/usage_report.py` |
+| `make package` | `code/package.py` |
+| `make graph` | `graphify update .` (re-extract code into `graphify-out/`, no LLM calls) |
+
+The Makefile loads `.env` automatically (plain `KEY=value` lines, no quotes).
+
+`make dev` overwrites `output.csv` and the evaluation report with offline results; rerun `make run` before submitting.
+
 Model: `deepseek/deepseek-v4.1-flash` through the OpenRouter SDK at temperature 0. Every response is cached under `.cache/` (git-ignored), keyed by model, prompt and input, so a rerun with a warm cache makes no model calls and writes a byte-identical `output.csv`.
 
 Offline development (no API key): `python code/main.py --assume-deletion` and `python code/evaluation/main.py --offline` skip the intent gate and audit every request as a deletion request. Use them for development only; the submitted `output.csv` must come from a run that includes the intent gate. Each screenshot is cut into table-column and detail-panel tiles (`code/vision.py`, Pillow), upscaled, and transcribed by the model once per tile (the model misreads full-size screenshots); transcripts are cached, and without a key and a warm cache images are skipped.
@@ -199,6 +217,6 @@ For the usage report, set `OPENROUTER_PRICE_INPUT` and `OPENROUTER_PRICE_OUTPUT`
 | `policy.py` | Data category resolution and treatment from `deletion_rules.csv` |
 | `planner.py` | Status decision, finding/remediation/verification steps, fixed ordering, serialization |
 | `intent.py`, `llm.py` | Cached one-call-per-case intent gate (6 workers) and the OpenRouter client |
-| `evaluation/main.py` | Sample accuracy, citation validity, determinism, custom cases |
+| `evaluation/main.py` | Sample accuracy, citation validity, determinism (sample runs), custom cases |
 
 Everything except intent classification and image reading is plain, deterministic code.

@@ -76,10 +76,21 @@ The harness is built before the pipeline and scores whatever `output.csv` exists
 - **Step accuracy:** share of expected steps matched exactly (all 7 fields) at the same position.
 - **Field accuracy:** share of matching fields across position-aligned steps; missing or extra steps count as all fields wrong.
 - **Sequence accuracy:** share of cases whose ordered `(phase, operation, system_id, resource_id)` list matches exactly.
-- **Citation validity:** share of non-empty `evidence_id` values in the full 518-row output that resolve to a manifest `file_id`, `activity_id`, or `audit_id` with timestamp at or before the case's `audit_at`.
+- **Citation validity:** share of non-empty `evidence_id` values in the 32-row sample output (the evaluation never runs the 518 evaluation requests) that resolve to a manifest `file_id`, `activity_id`, or `audit_id` with timestamp at or before the case's `audit_at`.
 - **Determinism:** the pipeline runs twice; 100 if both `output.csv` files are byte-identical, else 0, with differing rows listed.
 
 Headline = 0.25 status + 0.20 step + 0.15 field + 0.20 sequence + 0.10 citation + 0.10 determinism. The command prints every metric and the headline, writes them to `evaluation/evaluation_report.md`, and always exits 0 (report only, no gate). Custom cases are stored as small CSV fixtures under `code/evaluation/cases/` with expected outputs and reported separately.
+
+### D12. Developer commands
+A root `Makefile` is a thin alias layer; it adds no logic. `PY ?= .venv/bin/python`, overridable.
+- `install`: create `.venv`, `pip install -r code/requirements.txt`
+- `run`: `code/main.py` then `code/validate_output.py` (submission run, intent gate on)
+- `dev`: `code/main.py --assume-deletion` then `code/evaluation/main.py --offline` (no API key)
+- `eval`: `code/evaluation/main.py`
+- `validate`, `test` (`pytest tests`), `usage` (`code/usage_report.py`), `package` (`code/package.py`)
+- `graph`: `graphify update .` to re-extract code into `graphify-out/` without LLM calls
+
+AGENTS.md §8 says do not assume bash, so Make is a convenience only and README keeps the raw commands. Windows users run those directly.
 
 ## Risks / Trade-offs
 

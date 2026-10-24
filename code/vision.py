@@ -9,9 +9,9 @@ from typing import Dict, List, Tuple
 
 from PIL import Image
 
-from paths import PROMPTS
+import prompt_registry
 
-PROMPT = (PROMPTS / "image_tile.txt").read_text(encoding="utf-8")
+PROMPT = prompt_registry.load("image_tile")
 NAV_WIDTH = 222          # left navigation rail
 TABLE_BOX = (246, 365, 1412)      # x0, y_top, x1 of the main table body
 PANEL_BOX = (1426, 330, 1776)     # x0, y_top, x1 of the detail panel
