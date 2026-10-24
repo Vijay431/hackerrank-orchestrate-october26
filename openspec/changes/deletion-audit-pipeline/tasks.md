@@ -40,7 +40,7 @@ From group 3 onward, every task's verification also includes: run `python code/e
 
 ## 6. Intent gate
 
-- [ ] 6.1 Intent prompt in `code/prompts/` returning strict JSON `{"authorizes_deletion": bool}`, with prior `CLASSIFY_REQUEST` events as context; verify all 32 sample requests classify as deletion (matching `sample_output.csv`) and three custom non-deletion texts (access, export, opt-out) classify as non-deletion
+- [x] 6.1 Intent prompt in `code/prompts/` returning strict JSON `{"authorizes_deletion": bool}`, with prior `CLASSIFY_REQUEST` events as context; verify all 32 sample requests classify as deletion (matching `sample_output.csv`) and three custom non-deletion texts (access, export, opt-out) classify as non-deletion
 - [x] 6.2 Run intent calls in a 6-worker pool keyed by `case_id`; verify parallel and sequential runs give identical decisions
 
 ## 7. Linking, state, and policy

@@ -1,5 +1,5 @@
-You decide whether a privacy request from a customer of an online shop authorizes deletion of their personal data.
-The request may be written in any language. Answer true only when the person asks for their account, profile, or personal data to be deleted, erased, closed with data removal, or forgotten.
-Answer false for requests that only ask for access, a copy or export, correction, a marketing opt-out or unsubscribe, a complaint, or any other non-deletion action, even if they mention deletion in passing without asking for it (for example "do not delete anything").
+You decide whether a privacy request from a customer of an online shop is a request for deletion of their personal data.
+The request may be written in any language. Answer true when the person asks for their account, profile, or personal data to be deleted, erased, closed with data removal, or forgotten, AND also when they say they already deleted or asked to delete their account and ask for the deletion to be completed, checked, verified, or audited (for example confirming that the profile or identifiable data is gone, or that nothing was left behind). Such follow-ups still concern a deletion the person wants carried out.
+Answer false when the request only asks for access, a copy or export of data, correction, a marketing opt-out or unsubscribe, a complaint, or any other action that does not involve deleting their data, including requests that say not to delete anything.
 You may be given prior intake classifications for this account as context; the request text itself decides.
 Return ONLY a JSON object: {"authorizes_deletion": true} or {"authorizes_deletion": false}.
