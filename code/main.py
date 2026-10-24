@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from paths import DATASET, OUTPUT  # noqa: E402
+from progress import Progress  # noqa: E402
 
 
 def write_rows(rows, out_path: Path):
@@ -34,7 +35,7 @@ def audit(requests, intent, client):
     users, alias, seen = {}, {}, {}
     for r in sorted(universe.values(), key=lambda r: r.case_id):
         s = idx.resolve_email(r.email)
-        if not s:
+        if not s or not intent.get(r.case_id, True):  # a non-deletion request triggers no deletion-worker events
             continue
         rep = seen.setdefault((s.user_id, r.reported_at, r.audit_at), r.case_id)
         if rep == r.case_id:
@@ -44,7 +45,9 @@ def audit(requests, intent, client):
     linker = ActivityLinker([r for r in universe.values() if r.case_id in users], users,
                             owners_map(findex, idx), activity)
     rows = {}
+    bar = Progress("audit", len(requests))
     for r in requests:
+        bar.update()
         if not intent.get(r.case_id, False):
             rows[r.case_id] = ("NOT_APPLICABLE", "[]")
             continue
@@ -57,6 +60,7 @@ def audit(requests, intent, client):
         items = [it for it in (assess(l, r.audit_at, vals, findex, policy) for l in links.values()) if it]
         status, steps = build_steps(items)
         rows[r.case_id] = (status, serialize(steps))
+    bar.close()
     if policy.unresolved:
         print(f"warning: {policy.unresolved} resource categories could not be resolved", file=sys.stderr)
     return rows
@@ -86,7 +90,9 @@ def main(argv=None) -> int:
         from intent import classify_all
         client = LLMClient()
         activity = loader.load_activity()
-        intent = classify_all(client, requests, lambda r: [])
+        # every known request, so events cannot be attributed to a case that asked for something else
+        everyone = {r.case_id: r for r in list(loader.load_requests()) + list(loader.load_samples()) + requests}
+        intent = classify_all(client, sorted(everyone.values(), key=lambda r: r.case_id), lambda r: [])
     rows = audit(requests, intent, client)
     write_rows(rows, Path(args.output))
     print(f"wrote {len(rows)} rows to {args.output}")

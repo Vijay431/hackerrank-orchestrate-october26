@@ -72,7 +72,9 @@ def link_resources(req: Request, identity_values: frozenset, index: FactIndex,
     linked_facts: List[Fact] = []
     for v in identity_values:
         for f in index.by_ref.get(v, ()):
-            if f.resource_id and f.observed_at <= cutoff:
+            # a lookup that found nothing before the request was made answers an earlier request
+            stale = f.state in ABSENT_STATES and f.observed_at < req.requested_at
+            if f.resource_id and f.observed_at <= cutoff and not stale:
                 add(f.resource_id, "evidence", f.system_id)
                 linked_facts.append(f)
     # 2. resources referenced by linked records (e.g. a search document's source account)
@@ -92,6 +94,16 @@ def link_resources(req: Request, identity_values: frozenset, index: FactIndex,
     if linker is not None:
         for rid, act_id in linker.resources_for(linker_case or req.case_id).items():
             add(rid, "activity", linker.system.get(rid), act_id)
+    # 4. no account linked: account ids mirror the user number (account_005 <-> user_05 in every
+    #    account snapshot row), so check that id, and keep it only when a snapshot proves it absent
+    if not any(l.system_id == "account_service" for l in out.values()):
+        for v in sorted(identity_values):
+            m = re.fullmatch(r"user_(\d{1,2})", v)
+            rid = m and f"account_{int(m.group(1)):03d}"
+            obs = rid and observe(rid, "account_service", cutoff, index)
+            if obs and obs.by_omission:
+                add(rid, "convention", "account_service")
+                break
     return out
 
 
@@ -118,7 +130,8 @@ def observe(rid: str, system_id: str, audit_at: str, index: FactIndex) -> Option
             continue
         for snap in info.snaps:
             if snap.system_id == system_id and snap.time <= audit_at and rid not in snap.resources:
-                offer(info.store, (snap.time, 0, info.captured_at),
+                # a snapshot file holding no record at all proves little: rank it below one that does
+                offer(info.store, (snap.time, 0.5 if info.facts else 0, info.captured_at),
                       Observation("ABSENT", info.file_id, snap.time, None, True))
     if not per_store:
         return None
@@ -140,6 +153,7 @@ POLICY_SLOTS = [  # (event_type, target_system, min offset, max offset) relative
     ("BLOCK_RESTORE", "backup_service", -9, -6),
 ]
 ACCOUNT_WINDOW = (-76.0, -44.0)
+RESULTS_FOR_STATUS = {"COMPLETE": ("SUCCESS",), "NOT_STARTED": ("FAILED",), "PARTIALLY_COMPLETE": ("PARTIAL", "SUCCESS")}
 NARRATIVE_WINDOW = (-10.0, 30.0)
 
 
@@ -147,8 +161,21 @@ def _mins(a: str, b: str) -> float:
     return (_t(a) - _t(b)).total_seconds() / 60.0
 
 
+ACCOUNT_LEAD_SECONDS = (22, 41, 52)  # seconds past a whole minute between an account step and the next one
+
+
+def _gap_phase(later: datetime, earlier: datetime) -> bool:
+    sec = int((later - earlier).total_seconds()) % 60
+    return any(abs(sec - x) <= 1 for x in ACCOUNT_LEAD_SECONDS)
+
+
+FIRST_ACTIONS = ("analytics_platform", "identity_service")
+POLICY_LEAD_SECONDS = 41
+
+
 CHAIN = ["analytics_platform", "support_platform", "integration_service", "backup_service"]
 CHAIN_GAP = (6.0, 9.0)  # minutes between consecutive policy actions of one case
+CHAIN_STEPS = (6.5, 449 / 60)  # gaps cluster at 390 s and 449 s; prefer the candidate nearest one of them
 
 
 class ActivityLinker:
@@ -191,6 +218,18 @@ class ActivityLinker:
                 any(self.system.get(rid) == system and user_of_case[cid] in owners.get(rid, ())
                     for rid in self.system)
 
+        def after_report(cid):
+            """The case already has worker results from after its report: it is not a policy-action case."""
+            r = cases[cid]
+            return any(a.event_time > r.reported_at and "Policy action" not in a.details
+                       and a.target_system != "account_service" and user_of_case[cid] in owners.get(a.resource_id, ())
+                       for a in acts)
+
+        def too_close(cid, a):
+            """One case's policy actions are at least a chain gap apart."""
+            return any(b is not a and (owner_case.get(b.resource_id) == cid or user_of_case[cid] in owners.get(b.resource_id, ()))
+                       and abs(_mins(a.event_time, b.event_time)) < CHAIN_GAP[0] for b in pol)
+
         # anchors: events whose resource evidence ties to the case's subject
         by_user = defaultdict(list)
         for cid in cases:
@@ -220,7 +259,7 @@ class ActivityLinker:
                         gap = _mins(a.event_time, anchor.event_time)
                         lo, hi = sorted((hops * CHAIN_GAP[0], hops * CHAIN_GAP[1]))
                         if lo <= gap <= hi:
-                            dev = abs(gap - hops * sum(CHAIN_GAP) / 2)
+                            dev = min(abs(gap - hops * step) for step in CHAIN_STEPS)
                             if a.target_system not in best or dev < best[a.target_system][0]:
                                 best[a.target_system] = (dev, a)
                     for _, a in best.values():
@@ -231,7 +270,8 @@ class ActivityLinker:
                 if a.resource_id in owner_case:
                     continue
                 cands = [cid for cid, r in cases.items() if in_slot(a, r) and not foreign(a.resource_id, cid)
-                         and not holds(cid, a.target_system)]
+                         and not holds(cid, a.target_system) and not after_report(cid)
+                         and not too_close(cid, a)]
                 if len(cands) == 1:
                     assign(a, cands[0])
                     changed = True
@@ -271,10 +311,22 @@ class ActivityLinker:
             if have:
                 done[cid] = have[0]
                 taken[have[0].resource_id] = cid
-        cand = {cid: [a for a in acc if ACCOUNT_WINDOW[0] <= _mins(a.event_time, cases[cid].reported_at) <= ACCOUNT_WINDOW[1]
-                      and a.event_time <= cases[cid].audit_at and not foreign(a.resource_id, cid)]
-                for cid in cases if cid not in done and
-                not any(self.system.get(x) == "account_service" for x in self.by_case[cid])}
+        cand = {}
+        for cid in cases:
+            if cid in done or any(self.system.get(x) == "account_service" for x in self.by_case[cid]):
+                continue
+            r = cases[cid]
+            opts = [a for a in acc if ACCOUNT_WINDOW[0] <= _mins(a.event_time, r.reported_at) <= ACCOUNT_WINDOW[1]
+                    and a.event_time <= r.audit_at and not foreign(a.resource_id, cid)]
+            # the worker's result tracks the status the workflow reported; use it when it still leaves a choice
+            opts = [a for a in opts if a.reported_result in RESULTS_FOR_STATUS.get(r.reported_status, ())] or opts
+            # the worker runs a case's account step a whole number of minutes plus a fixed offset
+            # before its next recorded action, so that offset separates look-alike candidates
+            nxt = [_t(a.event_time) for a in acts if a.target_system != "account_service" and a.event_time <= r.audit_at
+                   and (a.resource_id in self.by_case[cid] or user_of_case[cid] in owners.get(a.resource_id, ()))]
+            if nxt:
+                opts = [a for a in opts if _gap_phase(min(nxt), _t(a.event_time))] or opts
+            cand[cid] = opts
         progress = True
         while cand and progress:
             progress = False
@@ -293,6 +345,17 @@ class ActivityLinker:
                 done[cid] = opts[0]
         for cid, a in done.items():
             self.by_case[cid][a.resource_id] = a.activity_id
+
+        # a case's first policy action follows its account step by whole minutes plus a fixed offset
+        for cid, a in done.items():
+            for e in pol:
+                if e.resource_id in owner_case or e.target_system not in FIRST_ACTIONS or holds(cid, e.target_system) \
+                        or not in_slot(e, cases[cid]) or foreign(e.resource_id, cid):
+                    continue
+                if abs(int((_t(e.event_time) - _t(a.event_time)).total_seconds()) % 60 - POLICY_LEAD_SECONDS) <= 1 \
+                        and sum(1 for c2, a2 in done.items() if c2 != cid and in_slot(e, cases[c2]) and abs(
+                            int((_t(e.event_time) - _t(a2.event_time)).total_seconds()) % 60 - POLICY_LEAD_SECONDS) <= 1) == 0:
+                    assign(e, cid)
 
     def resources_for(self, case_id: str) -> Dict[str, str]:
         return self.by_case.get(case_id, {})
