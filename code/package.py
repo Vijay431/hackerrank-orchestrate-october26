@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from paths import ROOT  # noqa: E402
 
-INCLUDE = ["code", "README.md", ".env.example", "evaluation", "tests"]
+INCLUDE = ["code", "README.md", "Makefile", ".env.example", "evaluation", "tests"]
 SKIP_PARTS = {"__pycache__", ".pytest_cache", ".venv", "venv", ".cache", "dataset", "node_modules"}
 
 

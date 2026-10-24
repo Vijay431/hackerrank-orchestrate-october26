@@ -13,3 +13,9 @@ graphify-out/cost.json
 __pycache__/
 *.pyc
 .venv/
+
+# dated graphify snapshots
+graphify-out/20*/
+
+# caches
+.pytest_cache/
