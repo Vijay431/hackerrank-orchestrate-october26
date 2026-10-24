@@ -7,8 +7,7 @@ schema: spec-driven
 context: |
   Build an AI agent that can help to resolve the problem given in the @problem_statement.md file.
   Follow the instructions in the @AGENTS.md file to build the agent.
-  use openrouter SDK to connect to the models only that I list here: deepseek/deepseek-v4-flash
-  If AI Agent requires a decision model, use the cloudflare/clef-flash model
+  use openrouter SDK to connect to the models only that I list here: deepseek/deepseek-v4.1-flash
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
