@@ -28,14 +28,14 @@ None.
 
 | Metric | Score |
 | --- | --- |
-| status | 66.67 |
+| status | 100.00 |
 | step | 100.00 |
-| field | 90.91 |
-| sequence | 66.67 |
+| field | 100.00 |
+| sequence | 100.00 |
 
 Cases: 3
 
-- `custom_01`: access-only request must be NOT_APPLICABLE - FAIL
+- `custom_01`: access-only request must be NOT_APPLICABLE - PASS
 - `custom_02`: request sent from a historical email (case-insensitive) must resolve to the same subject as the current email - PASS
 - `custom_03`: Spanish deletion request; account tombstone still holds direct identifiers so only REDACT_RECORD is required - PASS
 
@@ -47,6 +47,7 @@ Cases: 3
 | after 3.x (identity only) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
 | after 5.x (ingest only) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
 | offline (intent gate skipped), after 8.x | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
+| final-cold-cache | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
 
 ## Failures found and improvements made
 

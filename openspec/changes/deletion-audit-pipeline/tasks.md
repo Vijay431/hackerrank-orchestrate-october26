@@ -56,16 +56,16 @@ From group 3 onward, every task's verification also includes: run `python code/e
 - [x] 8.1 Status decision and step generation for COMPLETE and INCOMPLETE cases, with verification for every linked resource; verify `case_06` includes VERIFY_RECORD_ABSENT for `account_006`
 - [x] 8.2 Fixed ordering (phase, operation rank, `system_id`, `resource_id`) and renumbering; verify `case_11` step order matches `sample_output.csv`
 - [x] 8.3 Per-resource citation rule (latest covering capture of the resource's system at or before `audit_at`); verify cited `evidence_id` matches all 32 samples or mismatches are listed
-- [ ] 8.4 Write `output.csv` (sorted, compact sorted-key JSON, NOT_APPLICABLE as `[]`), replacing the stub; verify 518 rows, valid JSON, allowed operation/state pairs via a validator script
-- [ ] 8.5 Document setup and run commands in `README.md`; verify a clean run following the README produces `output.csv`
+- [x] 8.4 Write `output.csv` (sorted, compact sorted-key JSON, NOT_APPLICABLE as `[]`), replacing the stub; verify 518 rows, valid JSON, allowed operation/state pairs via a validator script
+- [x] 8.5 Document setup and run commands in `README.md`; verify a clean run following the README produces `output.csv`
 
 ## 9. Final reports
 
 - [x] 9.1 Add failures found and improvements made to `evaluation/evaluation_report.md` from the score history; verify the section is present
-- [ ] 9.2 Generate `evaluation/usage_report.md` from the usage ledger of the final full run (provider, model, calls, cache hits, tokens, totals, averages, cost estimates); verify it covers all required fields
+- [x] 9.2 Generate `evaluation/usage_report.md` from the usage ledger of the final full run (provider, model, calls, cache hits, tokens, totals, averages, cost estimates); verify it covers all required fields
 
 ## 10. Integration
 
-- [ ] 10.1 Run the full 518-case pipeline from a cold cache, then again from a warm cache; verify byte-identical `output.csv` and zero model calls on the second run
-- [ ] 10.2 Run the final evaluation and record the headline score; verify determinism is 100
+- [x] 10.1 Run the full 518-case pipeline from a cold cache, then again from a warm cache; verify byte-identical `output.csv` and zero model calls on the second run
+- [x] 10.2 Run the final evaluation and record the headline score; verify determinism is 100
 - [x] 10.3 Confirm the `code.zip` contents exclude `dataset/`, `.cache/`, venvs, and secrets; verify by listing the archive

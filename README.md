@@ -185,7 +185,9 @@ python -m pytest tests                                  # unit tests
 
 Model: `deepseek/deepseek-v4.1-flash` through the OpenRouter SDK at temperature 0. Every response is cached under `.cache/` (git-ignored), keyed by model, prompt and input, so a rerun with a warm cache makes no model calls and writes a byte-identical `output.csv`.
 
-Offline development (no API key): `python code/main.py --assume-deletion` and `python code/evaluation/main.py --offline` skip the intent gate and audit every request as a deletion request. Use them for development only; the submitted `output.csv` must come from a run that includes the intent gate. Images are read by the model once and cached; without a key and a warm cache they are skipped.
+Offline development (no API key): `python code/main.py --assume-deletion` and `python code/evaluation/main.py --offline` skip the intent gate and audit every request as a deletion request. Use them for development only; the submitted `output.csv` must come from a run that includes the intent gate. Each screenshot is cut into table-column and detail-panel tiles (`code/vision.py`, Pillow), upscaled, and transcribed by the model once per tile (the model misreads full-size screenshots); transcripts are cached, and without a key and a warm cache images are skipped.
+
+For the usage report, set `OPENROUTER_PRICE_INPUT` and `OPENROUTER_PRICE_OUTPUT` (USD per million tokens) and run `python code/usage_report.py [ledger.jsonl]`.
 
 ### Architecture
 
