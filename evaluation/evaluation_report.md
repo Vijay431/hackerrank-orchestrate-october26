@@ -54,8 +54,22 @@ Cases: 1
 | step | 100.00 |
 | field | 100.00 |
 | sequence | 100.00 |
+| Metric | Score |
+| Case-level deletion-status accuracy | 0.00 |
+| Step-level accuracy | 0.00 |
+| Field-level accuracy | 0.00 |
+| Sequence accuracy | 0.00 |
+| Citation validity (all 518 cases) | 100.00 |
+| Determinism (two runs byte-identical) | 100.00 |
+| **Headline** | **20.00** |
+| Metric | Score |
+| status | 100.00 |
+| step | 100.00 |
+| field | 100.00 |
+| sequence | 100.00 |
 | stub (2.x) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
 | after 3.x (identity only) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
+| after 5.x (ingest only) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
 
 ## Failures found and improvements made
 
