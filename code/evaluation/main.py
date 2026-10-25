@@ -194,7 +194,9 @@ def main():
 
     old = REPORT.read_text(encoding="utf-8") if REPORT.exists() else ""
     history = history_rows(old)
-    history.append("| run | " + " | ".join(f"{metrics[k]:.2f}" for k in WEIGHTS) + f" | {head:.2f} |")
+    scores = " | ".join(f"{metrics[k]:.2f}" for k in WEIGHTS) + f" | {head:.2f} |"
+    if not history or not history[-1].endswith("| " + scores):
+        history.append(f"| run | {scores}")
     failures = FAIL_HEADING + "\n\n_To be written from the score history._\n"
     if FAIL_HEADING in old:
         failures = old[old.index(FAIL_HEADING):]

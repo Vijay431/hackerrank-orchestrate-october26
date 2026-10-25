@@ -43,36 +43,20 @@ Cases: 3
 
 | Label | Status | Step | Field | Sequence | Citation | Determinism | Headline |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| stub (2.x) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
-| after 3.x (identity only) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
-| after 5.x (ingest only) | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
-| offline (intent gate skipped), after 8.x | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
-| final-cold-cache | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
-| sample-only eval | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
-| run | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
-| run | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
-| run | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
+| stub | 0.00 | 0.00 | 0.00 | 0.00 | 100.00 | 100.00 | 20.00 |
+| intent gate skipped (offline mode, since removed) | 100.00 | 91.71 | 94.40 | 71.88 | 100.00 | 100.00 | 91.88 |
 | phase1 case_03 chain-gap fix | 100.00 | 92.23 | 94.48 | 75.00 | 100.00 | 100.00 | 92.62 |
 | phase2 case_04 account convention + vacuous-snapshot rank | 100.00 | 93.26 | 95.36 | 78.12 | 100.00 | 100.00 | 93.58 |
 | trial case_17 evidence >= requested_at | 100.00 | 94.30 | 96.45 | 81.25 | 100.00 | 100.00 | 94.58 |
-| phase3 case_17 skip stale not-found lookups | 100.00 | 94.30 | 96.45 | 81.25 | 100.00 | 100.00 | 94.58 |
-| run | 100.00 | 94.30 | 96.45 | 81.25 | 100.00 | 100.00 | 94.58 |
 | trial latest-free account | 100.00 | 91.71 | 95.93 | 75.00 | 100.00 | 100.00 | 92.73 |
 | phase4 case_22/23 account result tracks reported_status | 100.00 | 95.34 | 96.67 | 84.38 | 100.00 | 100.00 | 95.44 |
-| phase4b case_23 account lead-offset tiebreak | 100.00 | 95.34 | 96.67 | 84.38 | 100.00 | 100.00 | 95.44 |
 | phase4b case_23 account lead-offset tiebreak | 100.00 | 95.85 | 96.74 | 87.50 | 100.00 | 100.00 | 96.18 |
 | phase5 case_21/25 first policy action lead offset | 100.00 | 96.37 | 97.26 | 90.62 | 100.00 | 100.00 | 96.99 |
-| run | 100.00 | 96.37 | 97.26 | 90.62 | 100.00 | 100.00 | 96.99 |
-| run | 100.00 | 96.89 | 97.78 | 93.75 | 100.00 | 100.00 | 97.80 |
-| run | 100.00 | 96.89 | 97.78 | 93.75 | 100.00 | 100.00 | 97.80 |
-| run | 100.00 | 96.89 | 97.78 | 93.75 | 100.00 | 100.00 | 97.80 |
-| run | 100.00 | 96.89 | 97.78 | 93.75 | 100.00 | 100.00 | 97.80 |
-| run | 100.00 | 96.89 | 97.78 | 93.75 | 100.00 | 100.00 | 97.80 |
 | run | 100.00 | 96.89 | 97.78 | 93.75 | 100.00 | 100.00 | 97.80 |
 
 ## Failures found and improvements made
 
-The latest score row comes from `make eval` (online, intent gate on); rows labelled with a phase were scored `--offline`, which skips the LLM intent gate, so the non-deletion custom case cannot pass in those rows.
+The latest score row comes from `make eval` (online, intent gate on); rows labelled with a phase or trial predate the removal of offline mode and were scored with the LLM intent gate skipped, so the non-deletion custom case cannot pass in those rows.
 
 | Failure found (sample diffs) | Improvement | Effect |
 | --- | --- | --- |
