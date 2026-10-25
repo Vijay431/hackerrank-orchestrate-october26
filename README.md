@@ -199,7 +199,7 @@ Model: `deepseek/deepseek-v4.1-flash` through the OpenRouter SDK at temperature 
 
 A keyless run needs a warm `.cache/`: cached responses are replayed, and without a cache entry the call fails (images are skipped). Each screenshot is cut into table-column and detail-panel tiles (`code/vision.py`, Pillow), upscaled, and transcribed by the model once per tile (the model misreads full-size screenshots); transcripts are cached, and without a key and a warm cache images are skipped.
 
-For the usage report, set `OPENROUTER_PRICE_INPUT` and `OPENROUTER_PRICE_OUTPUT` (USD per million tokens) and run `python code/usage_report.py`.
+`make usage` (or `python code/usage_report.py`) writes `evaluation/usage_report.md`, pricing tokens at the model's OpenRouter list price ($0.02 input / $1.00 output per 1M, `PRICE_PER_M` in `code/llm.py`). Set `OPENROUTER_PRICE_INPUT` and `OPENROUTER_PRICE_OUTPUT` (USD per million tokens) to override.
 
 ### Architecture
 

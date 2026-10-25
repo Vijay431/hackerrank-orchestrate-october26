@@ -16,6 +16,7 @@ from paths import CACHE, ROOT
 
 MODEL = "deepseek/deepseek-v4.1-flash"
 PROVIDER = "openrouter"
+PRICE_PER_M = (0.02, 1.0)  # USD per 1M (input, output) tokens, as listed by OpenRouter for MODEL
 CACHE_DIR = CACHE / "llm"
 LEDGER = CACHE / "usage_ledger.jsonl"
 MAX_ATTEMPTS = 4
