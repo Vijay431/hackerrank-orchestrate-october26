@@ -173,10 +173,10 @@ Issues found (file:line):
 2. The README packaging command (README.md:134) zips `README.md code` only. Following it omits the root `evaluation/` reports, which the code actually writes. `package.py` does include `evaluation`.
 3. Keyless reproduction gap (README.md:198-200): the claim that a warm `.cache/` replays results conflicts with `.cache/` being git-ignored and not packaged.
 4. The `make run` path depends on `.venv` existing (Makefile:2), which the README does not note at README.md:185-193.
-5. `README.md:121` and `README.md:159` headings are fine, but the README has no troubleshooting section and no mention of how to rerun a single case.
-6. The README has no badges, screenshots, or example output snippet. It is plain Markdown tables.
+5. The README has no troubleshooting section and does not say how to rerun a single case or how to recover from a missing `.cache/`.
+6. The README has no example output snippet and no architecture diagram. It is plain Markdown tables.
 7. `log.txt` is about 38 KB and is tracked as a submission artefact. It is append-only by rule, so it grows with every session.
-8. Typo-level: README.md:96 says "at least three additional evaluation cases". `code/evaluation/cases/` has exactly three rows, so the minimum is met with no margin.
+8. README.md:96 requires "at least three additional evaluation cases". `code/evaluation/cases/` has exactly three rows (`notes.csv` and `expected.csv` hold the same three), so the minimum is met with no margin.
 
 ## Git history shape
 
@@ -187,7 +187,7 @@ Issues found (file:line):
 - Commit subjects are dominated by `chore:` (dataset and problem-statement updates, log/graph refreshes). The engineering work appears in a burst on 2026-10-24 and 2026-10-25: "Deletion-audit pipeline: full implementation and final run (all tasks) (#1)", "security: stop Makefile evaluating .env", "refactor: versioned prompt registry", "fix: price usage report at the model's OpenRouter list price", "refactor: remove dead Makefile targets, CLI flags, offline mode and tests".
 - A merge commit names `origin/claude/clever-bell-b7cqef`, which suggests a Claude Code worktree branch merged back to main.
 - Commit ordering is not strictly monotone (for example, a 2026-10-24 security commit sits below 2026-10-25 commits), which suggests rebased or cherry-picked history.
-- Shape: a long dataset-building phase (roughly half the commits, 10-23 to 10-23), a short pipeline burst (10-24 to 10-25), then cleanup and documentation churn in the last day.
+- Shape: dataset-building on 10-21 to 10-23 (24 commits), the pipeline burst on 10-24 and 10-25 (28 commits, including the `#1` pipeline merge and the cleanup/refactor/docs churn on the last day), and one later commit on 10-31.
 
 ## Notable ideas
 
